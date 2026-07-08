@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>JeoparSII!</title>
+<!-- Google Fonts: Montserrat -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<!-- QR Code generator -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --gold: #D4A017;
+  --gold-light: #F5C842;
+  --navy: #0A1628;
+  --navy-mid: #162040;
+  --navy-light: #1E3060;
+  --navy-card: #243570;
+  --correct: #1A9B5F;
+  --wrong: #C0392B;
+  --white: #FFFFFF;
+  --off-white: #F0F4FF;
+  --dim: rgba(255,255,255,0.55);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Montserrat', 'Arial', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* SCREENS */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+/* LANDING */
+#screen-landing {
+  align-items: center; justify-content: space-between;
+  text-align: center; padding: 0;
+  background: var(--navy);
+  position: relative; overflow: hidden;
+}
+#screen-landing::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(212,160,23,0.12) 0%, transparent 65%),
+    radial-gradient(ellipse at 0% 100%, rgba(30,48,96,0.8) 0%, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(36,53,112,0.5) 0%, transparent 60%);
+  pointer-events: none;
+}
+.landing-top {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 3rem 2rem 2rem; position: relative; z-index: 1; width: 100%;
+}
+.logo-eyebrow {
+  font-size: clamp(0.6rem, 1.5vw, 0.72rem);
+  font-weight: 600; color: var(--gold);
+  letter-spacing: 0.35em; text-transform: uppercase;
+  margin-bottom: 0.75rem; opacity: 0.9;
+}
+.logo-title {
+  font-size: clamp(3.5rem, 14vw, 7rem);
+  font-weight: 900; color: var(--gold-light);
+  letter-spacing: 0.08em; line-height: 0.9;
+  text-shadow: 0 0 60px rgba(245,200,66,0.25), 0 4px 32px rgba(212,160,23,0.3);
+  margin-bottom: 0.3rem;
+  background: linear-gradient(135deg, #F5C842 0%, #D4A017 50%, #F5C842 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.logo-byline {
+  font-size: clamp(0.65rem, 1.4vw, 0.82rem);
+  font-weight: 500; color: rgba(245,200,66,0.65);
+  letter-spacing: 0.12em; margin-top: 0.4rem;
+  font-style: italic;
+}
+.logo-rule {
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 1rem auto;
+}
+.logo-sub {
+  font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+  color: var(--dim); letter-spacing: 0.2em;
+  text-transform: uppercase; margin-bottom: 2.5rem;
+  font-weight: 500;
+}
+.module-selector {
+  display: flex; gap: 0.6rem; margin-bottom: 2.5rem;
+  flex-wrap: wrap; justify-content: center;
+}
+.mod-btn {
+  padding: 0.65rem 1.4rem; border-radius: 6px;
+  border: 1.5px solid rgba(212,160,23,0.4); background: rgba(255,255,255,0.04);
+  color: rgba(245,200,66,0.7); cursor: pointer;
+  font-family: inherit; font-size: 0.75rem;
+  transition: all 0.2s; line-height: 1.4;
+  font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+}
+.mod-btn.active {
+  background: var(--gold); color: var(--navy); font-weight: 800;
+  border-color: var(--gold);
+  box-shadow: 0 4px 20px rgba(212,160,23,0.35);
+}
+.btn-group { display: flex; flex-direction: column; gap: 0.85rem; width: 100%; max-width: 300px; }
+.landing-footer {
+  width: 100%; padding: 1.2rem 2rem;
+  display: flex; align-items: center; justify-content: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  position: relative; z-index: 1;
+}
+.footer-brand {
+  font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.15em; color: rgba(255,255,255,0.2);
+  text-transform: uppercase; cursor: default;
+  user-select: none; transition: color 0.3s;
+}
+.footer-brand:hover { color: rgba(255,255,255,0.2); }
+.btn {
+  padding: 1rem 2rem; border: none; border-radius: 6px;
+  font-size: 0.9rem; font-family: inherit; cursor: pointer;
+  font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--gold);
+  background: linear-gradient(135deg, #F5C842 0%, #D4A017 100%);
+  color: var(--navy);
+  box-shadow: 0 4px 24px rgba(212,160,23,0.4);
+}
+.btn-primary:hover { box-shadow: 0 6px 32px rgba(212,160,23,0.55); }
+.btn-secondary { background: rgba(255,255,255,0.06); color: var(--gold-light); border: 1.5px solid rgba(212,160,23,0.5); }
+.btn-sm {
+  padding: 0.45rem 1rem; font-size: 0.85rem; border-radius: 6px;
+  border: none; cursor: pointer; font-family: inherit; font-weight: bold;
+  transition: transform 0.1s;
+}
+.btn-sm:active { transform: scale(0.97); }
+/* Q-actions redesigned — 3-level hierarchy */
+.btn-q-primary {
+  padding: 0.62rem 1.4rem; font-size: 0.92rem; border-radius: 8px;
+  background: linear-gradient(135deg, #F5C842 0%, #D4A017 100%);
+  color: var(--navy); border: none; cursor: pointer;
+  font-family: inherit; font-weight: 800; letter-spacing: 0.06em;
+  box-shadow: 0 3px 16px rgba(212,160,23,0.38);
+  transition: transform 0.1s, box-shadow 0.18s;
+}
+.btn-q-primary:hover { box-shadow: 0 5px 24px rgba(212,160,23,0.6); }
+.btn-q-primary:active { transform: scale(0.97); }
+.btn-q-secondary {
+  padding: 0.55rem 1.1rem; font-size: 0.85rem; border-radius: 8px;
+  background: var(--navy-card); color: var(--gold-light);
+  border: 1.5px solid rgba(212,160,23,0.55); cursor: pointer;
+  font-family: inherit; font-weight: 700; letter-spacing: 0.03em;
+  transition: transform 0.1s, background 0.15s;
+}
+.btn-q-secondary:hover { background: rgba(36,53,112,0.85); }
+.btn-q-secondary:active { transform: scale(0.97); }
+.btn-q-tertiary {
+  padding: 0.45rem 0.9rem; font-size: 0.78rem; border-radius: 6px;
+  background: transparent; color: var(--dim);
+  border: 1px solid rgba(255,255,255,0.18); cursor: pointer;
+  font-family: inherit; font-weight: 600;
+  transition: transform 0.1s, color 0.15s, border-color 0.15s;
+}
+.btn-q-tertiary:hover { color: var(--white); border-color: rgba(255,255,255,0.35); }
+.btn-q-tertiary:active { transform: scale(0.97); }
+/* FIREBASE SETUP SCREEN */
+#screen-setup {
+  align-items: center; justify-content: center;
+  padding: 2rem; background: var(--navy-mid);
+}
+.setup-box {
+  background: var(--navy-card); border: 2px solid var(--gold);
+  border-radius: 12px; padding: 2rem; max-width: 560px; width: 100%;
+}
+.setup-box h2 { color: var(--gold-light); margin-bottom: 0.5rem; font-size: 1.3rem; }
+.setup-box p { color: var(--dim); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.25rem; }
+.setup-box code {
+  display: block; background: rgba(0,0,0,0.4); border-radius: 6px;
+  padding: 0.8rem 1rem; font-size: 0.78rem; color: #7EC8E3;
+  margin-bottom: 1.25rem; line-height: 1.6; white-space: pre-wrap;
+}
+.setup-field { margin-bottom: 0.9rem; }
+.setup-field label { display: block; font-size: 0.78rem; color: var(--dim); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.setup-field input {
+  width: 100%; padding: 0.7rem 0.9rem; border-radius: 6px;
+  border: 1.5px solid rgba(212,160,23,0.4); background: var(--navy-light);
+  color: var(--white); font-size: 0.9rem; font-family: monospace;
+}
+.setup-field input:focus { outline: none; border-color: var(--gold); }
+/* BOARD */
+#screen-board { background: var(--navy); }
+.board-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.7rem 1rem; background: var(--navy-mid);
+  border-bottom: 2px solid var(--gold); flex-shrink: 0;
+}
+.board-header h1 { font-size: clamp(1rem, 3vw, 1.4rem); color: var(--gold-light); letter-spacing: 0.15em; font-weight: 900; text-transform: uppercase; }
+.board-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 6px; padding: 8px; flex: 1;
+}
+/* Category headers — big & bold */
+.cat-header {
+  background: linear-gradient(160deg, #1a2d5a 0%, var(--navy-card) 100%);
+  border: 2px solid var(--gold);
+  border-radius: 8px; padding: 0.6rem 0.5rem;
+  text-align: center;
+  font-size: clamp(1rem, 2.4vw, 1.55rem);
+  font-weight: 900; color: var(--gold-light);
+  letter-spacing: 0.05em; text-transform: uppercase;
+  line-height: 1.2; display: flex; align-items: center;
+  justify-content: center; min-height: 90px;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 12px rgba(245,200,66,0.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 12px rgba(0,0,0,0.3);
+  animation: catDrop 0.5s ease both;
+}
+.cat-header:nth-child(1) { animation-delay: 0.05s; }
+.cat-header:nth-child(2) { animation-delay: 0.12s; }
+.cat-header:nth-child(3) { animation-delay: 0.19s; }
+.cat-header:nth-child(4) { animation-delay: 0.26s; }
+.cat-header:nth-child(5) { animation-delay: 0.33s; }
+@keyframes catDrop {
+  from { opacity: 0; transform: translateY(-18px) scale(0.95); }
+  to   { opacity: 1; transform: none; }
+}
+/* Column colors */
+.cell.col-a { background: linear-gradient(160deg, #46cec7 0%, #39beb7 100%); border-color: rgba(0,0,0,0.2); }
+.cell.col-b { background: linear-gradient(160deg, #12b8b1 0%, #00a6b0 100%); border-color: rgba(0,0,0,0.2); }
+.cell.col-c { background: linear-gradient(160deg, #1a90d4 0%, #007bc3 100%); border-color: rgba(0,0,0,0.2); }
+.cell.col-d { background: linear-gradient(160deg, #3070c0 0%, #2162af 100%); border-color: rgba(0,0,0,0.2); }
+.cell.col-e { background: linear-gradient(160deg, #2a4aa0 0%, #1e398d 100%); border-color: rgba(0,0,0,0.2); }
+/* Cells */
+.cell {
+  background: linear-gradient(160deg, #1e3060 0%, var(--navy-card) 100%);
+  border: 2px solid rgba(36,53,112,0.9);
+  border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer;
+  transition: transform 0.18s cubic-bezier(.34,1.56,.64,1),
+              border-color 0.18s, box-shadow 0.18s, background 0.18s;
+  min-height: 56px;
+  animation: cellFadeIn 0.45s ease both;
+  position: relative; overflow: hidden;
+}
+/* stagger cell entry by row */
+.cell:nth-child(6),  .cell:nth-child(7),  .cell:nth-child(8),  .cell:nth-child(9),  .cell:nth-child(10)  { animation-delay: 0.38s; }
+.cell:nth-child(11), .cell:nth-child(12), .cell:nth-child(13), .cell:nth-child(14), .cell:nth-child(15) { animation-delay: 0.46s; }
+.cell:nth-child(16), .cell:nth-child(17), .cell:nth-child(18), .cell:nth-child(19), .cell:nth-child(20) { animation-delay: 0.54s; }
+.cell:nth-child(21), .cell:nth-child(22), .cell:nth-child(23), .cell:nth-child(24), .cell:nth-child(25) { animation-delay: 0.62s; }
+.cell:nth-child(26), .cell:nth-child(27), .cell:nth-child(28), .cell:nth-child(29), .cell:nth-child(30) { animation-delay: 0.70s; }
+@keyframes cellFadeIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.cell::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(245,200,66,0.12) 0%, transparent 70%);
+  opacity: 0; transition: opacity 0.2s;
+}
+.cell:hover:not(.used) {
+  border-color: var(--gold);
+  transform: scale(1.055);
+  box-shadow: 0 6px 28px rgba(212,160,23,0.35), 0 0 0 1px rgba(212,160,23,0.2);
+}
+.cell:hover:not(.used)::before { opacity: 1; }
+.cell:active:not(.used) { transform: scale(0.96); }
+.cell .pts {
+  font-size: clamp(1.1rem, 2.8vw, 1.8rem); font-weight: 900;
+  color: var(--gold-light);
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 12px rgba(245,200,66,0.4);
+  letter-spacing: 0.02em;
+  position: relative; z-index: 1;
+}
+.cell.used {
+  opacity: 0.35; pointer-events: none;
+  transform: scale(0.95); transition: all 0.4s ease;
+  background: rgba(10,22,40,0.6) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+.cell.used .pts { display: none; }
+.cell.used::after {
+  content: '✕';
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+  font-weight: 900; color: rgba(255,255,255,0.35);
+  animation: xPop 0.3s cubic-bezier(.34,1.5,.64,1) both;
+}
+@keyframes xPop {
+  from { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+  to   { opacity: 1; transform: none; }
+}
+/* QUESTION (MC) */
+#screen-question {
+  align-items: center; justify-content: center;
+  padding: 1.5rem; background: var(--navy-mid);
+}
+.q-box {
+  background: var(--navy-card); border: 2px solid var(--gold);
+  border-radius: 12px; padding: 2rem; max-width: 700px; width: 100%;
+  animation: qBoxIn 0.35s cubic-bezier(.34,1.46,.64,1) both;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(212,160,23,0.1);
+}
+@keyframes qBoxIn {
+  from { opacity: 0; transform: scale(0.93) translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+.q-cat { font-size: 0.78rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; }
+.q-pts-badge { background: var(--gold); color: var(--navy); font-weight: bold; padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 1rem; }
+.timer-display { font-size: 2.8rem; font-weight: bold; color: var(--gold-light); text-align: center; font-variant-numeric: tabular-nums; }
+.timer-bar-wrap { width: 100%; height: 6px; background: var(--navy-light); border-radius: 3px; margin: 0.4rem 0 1.25rem; overflow: hidden; }
+.timer-bar { height: 100%; background: var(--gold); border-radius: 3px; transition: width 1s linear, background 0.5s; }
+.q-text { font-size: clamp(0.95rem, 2.2vw, 1.15rem); line-height: 1.65; margin-bottom: 1.5rem; color: var(--off-white); font-weight: 500; }
+.options { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.5rem; }
+.opt-btn {
+  background: var(--navy-light); border: 2px solid transparent;
+  border-radius: 8px; padding: 0.75rem 1rem; color: var(--white);
+  font-size: clamp(0.82rem, 1.8vw, 0.96rem); font-family: inherit;
+  text-align: left; line-height: 1.4;
+}
+.opt-btn.correct { background: var(--correct) !important; border-color: #27AE60; }
+.opt-btn.wrong { background: var(--wrong) !important; border-color: #E74C3C; }
+.opt-letter {
+  display: inline-block; width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,0.15); text-align: center; line-height: 22px;
+  font-size: 0.8rem; font-weight: bold; margin-right: 0.5rem;
+}
+.q-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+/* LIVE RESPONSE COUNTER */
+.response-bar {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 1rem; font-size: 0.8rem; color: var(--dim);
+}
+.response-bar span { font-weight: bold; color: var(--gold-light); }
+/* PLAYER SCREEN */
+#screen-player {
+  background: var(--navy-mid);
+  height: 100dvh; height: 100vh;   /* fallback */
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.player-top {
+  position: sticky; top: 0; z-index: 50;
+  flex-shrink: 0;
+  background: var(--navy);
+  border-bottom: 2px solid var(--gold);
+  padding: 0.5rem 1rem 0.4rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 0.05rem 0.6rem;
+}
+.player-name-tag {
+  grid-column: 1; grid-row: 1;
+  font-weight: 700; color: var(--white); font-size: 0.88rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.player-name-tag::before { content: '👤 '; font-size: 0.78rem; }
+.player-pts-total {
+  grid-column: 2; grid-row: 1 / 3;
+  align-self: center;
+  font-size: 1.35rem; font-weight: 900; color: var(--gold-light);
+  background: rgba(212,160,23,0.14); border: 1.5px solid rgba(212,160,23,0.4);
+  padding: 0.18rem 0.7rem; border-radius: 22px;
+  white-space: nowrap; letter-spacing: 0.03em;
+  transition: color 0.3s, background 0.3s;
+}
+.player-module-label {
+  grid-column: 1; grid-row: 2;
+  font-size: 0.6rem; color: var(--dim);
+  letter-spacing: 0.07em; text-transform: uppercase;
+}
+.player-inner {
+  flex: 1; overflow-y: auto;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem; width: 100%; max-width: 520px; margin: 0 auto;
+}
+.player-waiting { color: var(--dim); font-size: 1.1rem; line-height: 2; text-align: center; }
+.player-q-box {
+  background: var(--navy-card); border: 2px solid var(--gold);
+  border-radius: 12px; padding: 1.4rem; width: 100%;
+  animation: qBoxIn 0.4s cubic-bezier(.34,1.4,.64,1) both;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.35);
+}
+.player-q-text { font-size: clamp(0.9rem, 2.3vw, 1.05rem); line-height: 1.65; margin-bottom: 1.25rem; color: var(--off-white); font-weight: 500; }
+.player-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+.player-opt {
+  background: var(--navy-light); border: 2px solid transparent;
+  border-radius: 8px; padding: 0.8rem 0.65rem; color: var(--white);
+  font-size: clamp(0.78rem, 1.9vw, 0.92rem); font-family: inherit;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s; line-height: 1.4; text-align: left;
+}
+.player-opt:hover:not(:disabled) { border-color: var(--gold); }
+.player-opt:disabled { cursor: default; }
+.player-opt.selected { border-color: var(--gold-light); background: rgba(212,160,23,0.2); }
+.player-opt.correct { background: var(--correct) !important; border-color: #27AE60; }
+.player-opt.wrong { background: var(--wrong) !important; border-color: #E74C3C; }
+.feedback-msg {
+  margin-top: 0.9rem; padding: 0.7rem 1rem; border-radius: 8px;
+  font-size: 1rem; font-weight: bold; text-align: center;
+}
+.feedback-msg.correct { background: rgba(26,155,95,0.2); color: #2ECC71; }
+.feedback-msg.wrong { background: rgba(192,57,43,0.2); color: #E74C3C; }
+.feedback-msg.slow { background: rgba(212,160,23,0.2); color: var(--gold-light); }
+.player-timer-bar-wrap { width: 100%; height: 4px; background: var(--navy-light); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; }
+.player-timer-bar { height: 100%; background: var(--gold); border-radius: 2px; transition: width 1s linear, background 0.5s; }
+/* SCOREBOARD */
+#screen-scores { padding: 1rem; background: var(--navy-mid); overflow-y: auto; }
+.score-header { text-align: center; padding: 1rem 0 1.5rem; color: var(--gold-light); font-size: 1.2rem; letter-spacing: 0.18em; font-weight: 800; text-transform: uppercase; }
+.score-table { width: 100%; max-width: 480px; margin: 0 auto; }
+/* LIVE SCORES VIEW (?view=scores) */
+#live-scores-view {
+  display: none; min-height: 100vh; flex-direction: column;
+  background: var(--navy); padding: 0;
+}
+#live-scores-view.active { display: flex; }
+.lsv-header {
+  background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy) 100%);
+  border-bottom: 3px solid var(--gold);
+  padding: 1.2rem 2rem; display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.lsv-title {
+  font-size: clamp(1.4rem, 4vw, 2.2rem); font-weight: 900; letter-spacing: 0.12em;
+  background: linear-gradient(135deg, #F5C842, #D4A017, #F5C842);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.lsv-live-badge {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.72rem; color: var(--gold); letter-spacing: 0.15em;
+  text-transform: uppercase; font-weight: 700;
+}
+.lsv-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #27AE60;
+  animation: lsv-pulse 1.4s ease-in-out infinite;
+}
+@keyframes lsv-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+.lsv-body { flex: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+.lsv-table { width: 100%; max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.6rem; }
+.lsv-row {
+  display: grid; grid-template-columns: 3rem 1fr auto;
+  align-items: center; gap: 1rem;
+  padding: 0.85rem 1.2rem; border-radius: 10px;
+  background: var(--navy-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: background 0.4s, transform 0.3s;
+  animation: lsv-in 0.35s ease both;
+}
+@keyframes lsv-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.lsv-row.rank-1 { background: rgba(212,160,23,0.18); border-color: var(--gold); }
+.lsv-row.rank-2 { background: rgba(180,180,180,0.10); border-color: rgba(192,192,192,0.4); }
+.lsv-row.rank-3 { background: rgba(180,100,40,0.12); border-color: rgba(205,127,50,0.4); }
+.lsv-rank {
+  font-size: 1.5rem; font-weight: 900; text-align: center;
+  color: var(--dim);
+}
+.lsv-row.rank-1 .lsv-rank { font-size: 1.8rem; }
+.lsv-name {
+  font-size: clamp(0.95rem, 2.5vw, 1.2rem); font-weight: 700; color: var(--white);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lsv-pts {
+  font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 900; color: var(--gold-light);
+  white-space: nowrap; letter-spacing: 0.03em;
+}
+.lsv-row.rank-1 .lsv-pts { font-size: clamp(1.3rem, 3.5vw, 1.8rem); color: #F5C842; }
+.lsv-empty {
+  text-align: center; color: var(--dim); font-size: 1rem;
+  margin-top: 4rem; line-height: 1.8;
+}
+.lsv-footer {
+  text-align: center; padding: 0.8rem;
+  font-size: 0.65rem; color: rgba(255,255,255,0.2);
+  letter-spacing: 0.1em; text-transform: uppercase; flex-shrink: 0;
+}
+.lsv-count {
+  font-size: 0.8rem; color: var(--dim); text-align: center;
+  margin-bottom: 1rem; letter-spacing: 0.05em;
+}
+.score-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.7rem 1rem; margin-bottom: 0.35rem;
+  background: linear-gradient(135deg, rgba(36,53,112,0.9) 0%, var(--navy-card) 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(212,160,23,0.15); transition: all 0.3s;
+  animation: slideIn 0.4s cubic-bezier(.34,1.3,.64,1) both;
+}
+.score-row:nth-child(1) { animation-delay: 0.05s; border-color: rgba(255,215,0,0.3); }
+.score-row:nth-child(2) { animation-delay: 0.10s; }
+.score-row:nth-child(3) { animation-delay: 0.15s; }
+.score-row:nth-child(n+4) { animation-delay: 0.2s; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.score-rank { font-size: 1.1rem; font-weight: bold; color: var(--dim); min-width: 28px; }
+.score-rank.g { color: #FFD700; } .score-rank.s { color: #C0C0C0; } .score-rank.b { color: #CD7F32; }
+.score-name { flex: 1; font-size: 0.93rem; }
+.score-pts { font-size: 1.1rem; font-weight: bold; color: var(--gold-light); }
+/* QR PANEL */
+#screen-qr {
+  align-items: center; justify-content: center;
+  background: var(--navy-mid); padding: 2rem; text-align: center;
+}
+.qr-box {
+  background: var(--white); border-radius: 12px;
+  padding: 1.5rem; display: inline-block; margin: 1.5rem auto;
+}
+#qr-url-display { font-size: 0.8rem; color: var(--dim); margin-top: 0.5rem; word-break: break-all; }
+/* STATUS DOT */
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--correct); display: inline-block; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+/* OVERLAY */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,22,40,0.96); z-index: 100;
+  align-items: center; justify-content: center;
+  flex-direction: column; padding: 2rem; text-align: center;
+}
+.overlay.show { display: flex; }
+.overlay input {
+  width: 100%; max-width: 300px; padding: 0.9rem 1rem; border-radius: 8px;
+  border: 2px solid var(--gold); background: var(--navy-light);
+  color: var(--white); font-size: 1rem; font-family: inherit; text-align: center; margin: 1rem 0;
+}
+.overlay input::placeholder { color: var(--dim); }
+.overlay input:focus { outline: none; border-color: var(--gold-light); }
+/* CONN STATUS */
+#conn-status {
+  position: fixed; top: 8px; right: 10px; font-size: 0.72rem;
+  padding: 3px 10px; border-radius: 10px; z-index: 200;
+  background: rgba(0,0,0,0.5); color: var(--dim);
+}
+#conn-status.connected { color: #2ECC71; cursor: pointer; }
+#conn-status.connected:hover { text-decoration: underline; }
+#conn-status.error { color: #E74C3C; }
+/* Ocultar badge fijo cuando el jugador está en su pantalla — la info está en el header */
+#screen-player.active ~ #conn-status,
+body.player-active #conn-status { display: none; }
+
+/* ══════════════════════════════════════════════
+   PONENTE MODE — tablero reactivo (proyector)
+══════════════════════════════════════════════ */
+body.ponente-mode #btn-start-wrap,
+body.ponente-mode #btn-reveal,
+body.ponente-mode .q-actions { display: none !important; }
+body.ponente-mode .board-header .btn-q-tertiary,
+body.ponente-mode .board-header .btn-q-secondary { pointer-events: none; opacity: 0.4; }
+
+/* ══════════════════════════════════════════════
+   PRODUCTOR PANEL
+══════════════════════════════════════════════ */
+#screen-productor {
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+}
+.prod-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 1rem 0.65rem;
+  background: var(--navy-mid);
+  border-bottom: 2px solid var(--gold);
+  flex-shrink: 0;
+}
+.prod-title {
+  font-size: 1.1rem; font-weight: 900; color: var(--gold-light);
+  letter-spacing: 0.08em;
+}
+.prod-subtitle {
+  font-size: 0.58rem; color: var(--dim); letter-spacing: 0.1em;
+  margin-top: 1px; text-transform: uppercase;
+}
+.prod-stats-bar {
+  display: flex; align-items: center; gap: 0.7rem;
+  padding: 0.35rem 1rem;
+  background: rgba(10,22,50,0.8);
+  border-bottom: 1px solid rgba(245,200,66,0.12);
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+.prod-sep { color: var(--dim); }
+.prod-reset-btn {
+  margin-left: auto; background: none; border: 1px solid rgba(255,255,255,0.18);
+  color: var(--dim); font-size: 0.72rem; padding: 0.15rem 0.55rem;
+  border-radius: 5px; cursor: pointer; font-family: inherit;
+}
+.prod-state-box {
+  padding: 0.6rem 1rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0; background: rgba(255,255,255,0.02);
+}
+.prod-state-tag {
+  font-size: 0.57rem; color: var(--dim); text-transform: uppercase;
+  letter-spacing: 0.12em; margin-bottom: 1px;
+}
+.prod-state-name {
+  font-size: 0.95rem; font-weight: 900; color: var(--white);
+}
+#prod-board-wrap { flex: 1; overflow-y: auto; padding: 0.65rem; }
+.prod-board-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.prod-cat-header {
+  background: linear-gradient(160deg, rgba(26,41,84,0.95), var(--navy-card));
+  border: 1px solid rgba(212,160,23,0.35);
+  border-radius: 5px; padding: 0.35rem 0.18rem;
+  text-align: center; font-size: 0.48rem; font-weight: 800;
+  color: var(--gold-light); letter-spacing: 0.02em; text-transform: uppercase;
+  line-height: 1.25; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+}
+.prod-cell {
+  border-radius: 5px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; font-weight: 900; color: rgba(255,255,255,0.95);
+  min-height: 42px; cursor: pointer; border: none; font-family: inherit;
+  transition: transform 0.1s;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.55);
+}
+.prod-cell:active:not(:disabled) { transform: scale(0.87); }
+.prod-cell.prod-used {
+  opacity: 0.2; pointer-events: none;
+  background: rgba(10,22,40,0.8) !important;
+}
+.prod-col-a { background: linear-gradient(135deg, #46cec7, #2da8a2); }
+.prod-col-b { background: linear-gradient(135deg, #12b8b1, #0090a0); }
+.prod-col-c { background: linear-gradient(135deg, #1a90d4, #0066b0); }
+.prod-col-d { background: linear-gradient(135deg, #3070c0, #1850a0); }
+.prod-col-e { background: linear-gradient(135deg, #2a4aa0, #152880); }
+/* Question panel */
+#prod-question-wrap { flex: 1; overflow-y: auto; padding: 1rem; }
+.prod-q-cat {
+  font-size: 0.66rem; color: var(--dim); text-transform: uppercase;
+  letter-spacing: 0.08em; margin-bottom: 0.3rem;
+}
+.prod-q-pts {
+  display: inline-block; background: var(--gold); color: var(--navy);
+  font-weight: 900; font-size: 0.8rem; padding: 0.1rem 0.65rem;
+  border-radius: 10px; margin-bottom: 0.7rem;
+}
+.prod-q-text {
+  font-size: 0.88rem; font-weight: 700; color: var(--white);
+  line-height: 1.55; margin-bottom: 0.85rem;
+}
+.prod-q-opts { display: flex; flex-direction: column; gap: 0.38rem; }
+.prod-q-opt {
+  padding: 0.48rem 0.7rem; border-radius: 7px; font-size: 0.76rem;
+  color: var(--white); background: var(--navy-card);
+  border: 1px solid rgba(255,255,255,0.09); line-height: 1.4;
+  transition: opacity 0.35s;
+}
+.prod-q-opt.prod-q-correct {
+  background: rgba(26,155,95,0.28) !important;
+  border-color: rgba(46,204,113,0.5) !important;
+  color: #2ECC71; font-weight: 800;
+}
+/* Timer display */
+#prod-timer-display {
+  text-align: center; font-size: 3.2rem; font-weight: 900;
+  color: var(--gold-light); padding: 0.4rem 0;
+  letter-spacing: -0.02em; transition: color 0.5s;
+}
+/* Dock */
+.prod-dock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(10,22,40,0.98) 60%, transparent);
+  display: flex; flex-direction: column; gap: 0.42rem;
+}
+.prod-btn-primary {
+  width: 100%; padding: 1rem; border: none; border-radius: 14px;
+  background: linear-gradient(135deg, #F5C842 0%, #D4A017 100%);
+  color: var(--navy); font-family: inherit; font-weight: 900;
+  font-size: 1rem; letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; box-shadow: 0 6px 24px rgba(212,160,23,0.42);
+  transition: transform 0.08s;
+}
+.prod-btn-primary:active { transform: scale(0.97); }
+.prod-btn-primary.prod-green {
+  background: linear-gradient(135deg, #2ECC71 0%, #1A9B5F 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 24px rgba(26,155,95,0.42) !important;
+}
+.prod-btn-primary.prod-pulse {
+  animation: prod-pulse 0.9s ease-in-out infinite;
+}
+@keyframes prod-pulse {
+  0%, 100% { box-shadow: 0 6px 24px rgba(26,155,95,0.42); }
+  50%       { box-shadow: 0 8px 36px rgba(26,155,95,0.78); }
+}
+.prod-btn-secondary-dock {
+  width: 100%; padding: 0.78rem; border: 1.5px solid rgba(212,160,23,0.45);
+  border-radius: 12px; background: var(--navy-card);
+  color: var(--gold-light); font-family: inherit; font-weight: 700;
+  font-size: 0.88rem; cursor: pointer; transition: transform 0.08s;
+}
+.prod-btn-secondary-dock:active { transform: scale(0.97); }
+.prod-btn-back {
+  width: 100%; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px; background: transparent; color: var(--dim);
+  font-family: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer;
+}
+.prod-btn-back:active { background: rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+<div id="conn-status" onclick="handleConnClick()">⚪ desconectado</div>
+<!-- ═══════════════════════════════════
+     LANDING
+═══════════════════════════════════ -->
+<div id="screen-landing" class="screen active">
+  <div class="landing-top">
+    <div class="logo-eyebrow">Carnot · Educación Médica Continua</div>
+    <div class="logo-title">JeoparSII!</div>
+    <div class="logo-byline">SII — Roma V · Summit Gastro Cancún 2026</div>
+    <div class="logo-rule"></div>
+    <div class="logo-sub">SII — Roma V &nbsp;·&nbsp; Línea Libertrim</div>
+    <div class="module-selector">
+      <!-- Módulo 1 y 2 ocultos temporalmente — solo Módulo 3 activo -->
+      <button class="mod-btn active" onclick="selectModule(2)" style="pointer-events:none;">Módulo 3 &nbsp;·&nbsp; SII — Roma V</button>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="goMC()">ENTRAR AL TABLERO →</button>
+    </div>
+  </div>
+  <div class="landing-footer">
+    <span class="footer-brand">@PolarMultimedia<span id="mc-trigger">2026</span></span>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     FIREBASE SETUP (MC only)
+═══════════════════════════════════ -->
+<div id="screen-setup" class="screen">
+  <div class="setup-box">
+    <h2>⚙️ Configurar Firebase</h2>
+    <p>Para conectar los 150 dispositivos en tiempo real necesitas un proyecto gratuito de Firebase. Solo se hace una vez. Sigue estos pasos:</p>
+    <code>1. Ve a console.firebase.google.com
+2. "Agregar proyecto" → nombre cualquiera → Continuar
+3. Desactiva Analytics → Crear proyecto
+4. En el menú izquierdo: Build → Realtime Database
+5. "Crear base de datos" → elige región → modo prueba → Habilitar
+6. Clic en el ícono &lt;/&gt; (Web) en la pantalla principal
+7. Registra la app → copia los valores de abajo</code>
+    <div class="setup-field">
+      <label>API Key</label>
+      <input type="text" id="fb-apikey" placeholder="AIzaSy..." />
+    </div>
+    <div class="setup-field">
+      <label>Auth Domain</label>
+      <input type="text" id="fb-authdomain" placeholder="mi-proyecto.firebaseapp.com" />
+    </div>
+    <div class="setup-field">
+      <label>Database URL</label>
+      <input type="text" id="fb-dburl" placeholder="https://mi-proyecto-default-rtdb.firebaseio.com" />
+    </div>
+    <div class="setup-field">
+      <label>Project ID</label>
+      <input type="text" id="fb-projectid" placeholder="mi-proyecto" />
+    </div>
+    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="initFirebase()">Conectar y abrir tablero →</button>
+      <button class="btn-sm" style="background:var(--navy-light);color:var(--dim);" onclick="showScreen('landing')">← Volver</button>
+    </div>
+    <p class="setup-hint" style="margin-top:1rem;">💡 La configuración se guarda en este dispositivo para la próxima sesión.</p>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     MC BOARD
+═══════════════════════════════════ -->
+<div id="screen-board" class="screen">
+  <div class="board-header">
+    <div>
+      <h1>JeoparSII!</h1>
+      <div style="font-size:0.7rem;color:var(--dim);" id="board-module-label"></div>
+    </div>
+    <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn-q-secondary" style="font-size:0.8rem;padding:0.42rem 0.9rem;" onclick="showQR()">📱 QR</button>
+      <button class="btn-q-secondary" style="font-size:0.8rem;padding:0.42rem 0.9rem;" onclick="showScores()">🏆 Marcador</button>
+      <button class="btn-q-tertiary" style="font-size:0.8rem;" onclick="resetBoard()">🔄 Reiniciar</button>
+      <button class="btn-q-tertiary" style="font-size:0.8rem;" onclick="showScreen('landing')">← Salir</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:1.2rem;align-items:center;padding:0.3rem 1rem 0.25rem;background:rgba(10,22,50,0.7);border-bottom:1px solid rgba(245,200,66,0.15);font-size:0.72rem;font-weight:700;letter-spacing:0.05em;">
+    <span>🟢 <span id="board-connected-count">0</span> conectados</span>
+    <span style="color:var(--dim);">|</span>
+    <span>✅ <span id="board-answered-count">0</span> contestadas</span>
+  </div>
+  <div class="board-grid" id="board-grid"></div>
+</div>
+<!-- ═══════════════════════════════════
+     QUESTION (MC view)
+═══════════════════════════════════ -->
+<div id="screen-question" class="screen">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--navy-mid);">
+    <div class="q-box">
+      <div class="q-meta">
+        <div class="q-cat" id="q-cat-label"></div>
+        <div style="text-align:right;">
+          <div style="font-size:0.55rem;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;" id="q-pts-sublabel" hidden>Puntos disponibles</div>
+          <div class="q-pts-badge" id="q-pts-label" style="transition:background 0.3s,color 0.3s;font-size:1.15rem;padding:0.25rem 0.85rem;"></div>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <div class="timer-display" id="timer-display">15</div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar" style="width:100%"></div></div>
+      <div class="response-bar">
+        <span class="dot"></span> &nbsp;Respuestas recibidas: <span id="response-count">0</span>
+      </div>
+      <div class="q-text" id="q-text-display"></div>
+      <div class="options" id="q-options"></div>
+      <!-- Botón iniciar cronómetro — grande y prominente -->
+      <div id="btn-start-wrap" style="text-align:center;margin-bottom:1rem;">
+        <button id="btn-start-timer"
+          onclick="startTimerManual()"
+          style="background:linear-gradient(135deg,#F5C842,#D4A017);color:#0A1628;
+                 font-family:inherit;font-weight:900;font-size:1.1rem;letter-spacing:0.12em;
+                 text-transform:uppercase;padding:0.85rem 2.5rem;border:none;border-radius:8px;
+                 cursor:pointer;box-shadow:0 4px 24px rgba(212,160,23,0.5);
+                 transition:transform 0.1s,box-shadow 0.2s;">
+          ▶ INICIAR CRONÓMETRO
+        </button>
+      </div>
+      <!-- Panel que aparece al terminar el cronómetro -->
+      <div id="post-timer-panel" style="display:none;background:linear-gradient(135deg,rgba(212,160,23,0.08),rgba(36,53,112,0.3));border:1.5px solid rgba(212,160,23,0.4);border-radius:10px;padding:0.8rem 1.2rem;text-align:center;margin-bottom:0.9rem;">
+        <div style="font-size:1rem;font-weight:800;color:var(--gold-light);letter-spacing:0.12em;text-transform:uppercase;">⏱ Tiempo Terminado</div>
+        <div style="font-size:0.72rem;color:var(--dim);margin-top:0.2rem;">Elige una acción abajo</div>
+      </div>
+      <div class="q-actions">
+        <button class="btn-q-primary" style="display:none;" id="btn-reveal" onclick="revealAnswer()">✅ Revelar respuesta</button>
+        <button class="btn-q-secondary" onclick="showStats()">📊 Estadísticas</button>
+        <button class="btn-q-secondary" onclick="showScores()">🏆 Marcador</button>
+        <button class="btn-q-tertiary" onclick="backToBoard()">← Tablero</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     PLAYER SCREEN
+═══════════════════════════════════ -->
+<div id="screen-player" class="screen">
+  <div class="player-top">
+    <div class="player-name-tag" id="player-name-display">—</div>
+    <div class="player-pts-total" id="player-pts-display">0 pts</div>
+    <div class="player-module-label" id="player-module-display"><span id="player-conn-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2ECC71;margin-right:4px;vertical-align:middle;"></span><span id="player-conn-text">conectado</span>&nbsp;·&nbsp;<span id="player-module-text"></span></div>
+  </div>
+  <div class="player-inner">
+    <div id="player-content" style="width:100%;">
+      <div class="player-waiting">
+        <div style="font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;letter-spacing:0.06em;line-height:1;margin-bottom:0.15rem;background:linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">JeoparSII!</div>
+        <div style="font-size:0.72rem;color:rgba(245,200,66,0.55);letter-spacing:0.1em;font-style:italic;margin-bottom:1.2rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
+        <span class="dot"></span> Conectado — esperando pregunta…<br>
+        <span style="font-size:0.82rem;">El Productor abrirá la siguiente pregunta</span><br><br>
+        <div style="background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);border-radius:10px;padding:0.75rem 1rem;margin:0.5rem auto 0;text-align:center;max-width:280px;">
+          <div style="font-size:0.9rem;margin-bottom:0.2rem;">✈️</div>
+          <div style="font-size:0.78rem;color:var(--gold-light);font-weight:700;margin-bottom:0.15rem;">Top 3 de este módulo → DDW 2027</div>
+          <div style="font-size:0.68rem;color:var(--dim);line-height:1.4;">Inscripción · vuelo · hospedaje<br>Washington, DC · 15–18 mayo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     SCOREBOARD
+═══════════════════════════════════ -->
+<div id="screen-scores" class="screen">
+  <div class="score-header">🏆 Marcador en vivo</div>
+  <div class="score-table" id="score-table"></div>
+  <div style="text-align:center;margin-top:2rem;">
+    <button class="btn btn-secondary" style="max-width:200px;" onclick="backFromScores()">← Volver</button>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     QR SCREEN
+═══════════════════════════════════ -->
+<div id="screen-qr" class="screen">
+  <div style="font-size:1.1rem;font-weight:800;color:var(--gold-light);margin-bottom:0.25rem;letter-spacing:0.12em;text-transform:uppercase;">📱 QR de acceso para participantes</div>
+  <p style="color:var(--dim);font-size:0.82rem;margin-bottom:1.1rem;">Proyecta esta pantalla para que los participantes escaneen</p>
+  <!-- Selector de módulo -->
+  <div style="display:flex;gap:0.5rem;margin-bottom:1.2rem;">
+    <!-- Módulos 1 y 2 ocultos — solo Módulo 3 activo -->
+    <button id="qr-mod-btn-0" class="mod-btn" onclick="switchQR(0)" style="display:none;">Módulo 1</button>
+    <button id="qr-mod-btn-1" class="mod-btn" onclick="switchQR(1)" style="display:none;">Módulo 2</button>
+    <button id="qr-mod-btn-2" class="mod-btn active" onclick="switchQR(2)">Módulo 3 — SII Roma V</button>
+  </div>
+  <div id="qr-module-label" style="font-size:0.75rem;color:var(--gold);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.8rem;"></div>
+  <div class="qr-box" id="qr-container"></div>
+  <div id="qr-url-display"></div>
+  <div style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;">
+    <button class="btn btn-primary" onclick="renderBoard();showScreen('board');">▶ IR AL TABLERO</button>
+    <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);" onclick="copyJoinUrl()">Copiar URL</button>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     STATS OVERLAY (MC)
+═══════════════════════════════════ -->
+<div id="overlay-stats" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(8,16,32,0.96);z-index:900;align-items:center;justify-content:center;padding:1.5rem;flex-direction:column;">
+  <div style="max-width:520px;width:100%;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;">
+      <div>
+        <div style="font-size:1rem;font-weight:900;color:var(--gold-light);letter-spacing:0.12em;text-transform:uppercase;">📊 Respuestas en tiempo real</div>
+        <div id="stats-total-label" style="font-size:0.78rem;color:var(--dim);margin-top:0.2rem;"></div>
+      </div>
+      <button onclick="hideStats()" style="background:var(--navy-light);color:var(--white);border:none;border-radius:6px;padding:0.4rem 0.9rem;font-family:inherit;font-weight:700;cursor:pointer;font-size:0.85rem;">✕ Cerrar</button>
+    </div>
+    <div id="stats-bars" style="display:flex;flex-direction:column;gap:0.9rem;"></div>
+  </div>
+</div>
+<!-- ═══════════════════════════════════
+     OVERLAYS
+═══════════════════════════════════ -->
+<div id="overlay-name" class="overlay" style="overflow-y:auto;">
+  <div style="font-size:clamp(1.8rem,7vw,2.8rem);font-weight:900;color:var(--gold-light);letter-spacing:0.06em;line-height:1;margin-bottom:0.15rem;background:linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">JeoparSII!</div>
+  <div style="font-size:0.75rem;color:rgba(245,200,66,0.6);letter-spacing:0.12em;font-style:italic;margin-bottom:0.9rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
+  <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 1rem;"></div>
+
+  <!-- PREMIO HERO -->
+  <div style="background:linear-gradient(135deg,rgba(212,160,23,0.18) 0%,rgba(212,160,23,0.06) 100%);border:1.5px solid var(--gold);border-radius:14px;padding:1.1rem 1.2rem 1rem;margin-bottom:1.1rem;text-align:center;max-width:340px;width:100%;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-18px;right:-14px;font-size:4rem;opacity:0.07;pointer-events:none;">✈️</div>
+    <div style="font-size:1.35rem;margin-bottom:0.3rem;">✈️</div>
+    <div style="font-size:clamp(1rem,4vw,1.25rem);font-weight:900;color:var(--gold-light);letter-spacing:0.04em;margin-bottom:0.4rem;line-height:1.2;">¿Listo para Washington?</div>
+    <div style="font-size:0.82rem;color:var(--off-white);line-height:1.55;margin-bottom:0.75rem;">
+      Los <strong style="color:var(--gold-light);">3 mejores de este módulo</strong> se ganan una beca completa para la<br>
+      <strong style="color:#fff;">Digestive Disease Week® 2027</strong><br>
+      <span style="color:var(--dim);font-size:0.76rem;">Washington, DC · 15–18 de mayo</span>
+    </div>
+    <div style="display:flex;justify-content:center;gap:1rem;font-size:0.74rem;color:var(--dim);border-top:1px solid rgba(212,160,23,0.2);padding-top:0.6rem;flex-wrap:wrap;">
+      <span>🎟 Inscripción</span>
+      <span>✈️ Vuelo</span>
+      <span>🏨 Hospedaje</span>
+    </div>
+    <div style="margin-top:0.65rem;font-size:0.75rem;color:rgba(245,200,66,0.7);font-style:italic;font-weight:600;">Responde rápido — cada segundo que pierdes son puntos que pierdes.</div>
+  </div>
+
+  <!-- Instrucciones -->
+  <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,160,23,0.15);border-radius:10px;padding:0.9rem 1.1rem;margin-bottom:1.1rem;text-align:left;max-width:340px;width:100%;">
+    <div style="font-size:0.75rem;color:var(--gold);font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.65rem;">📋 Cómo jugar</div>
+    <div style="display:flex;flex-direction:column;gap:0.5rem;">
+      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
+        <span style="color:var(--gold);flex-shrink:0;">🎯</span>
+        <span>El tablero tiene <strong>5 categorías</strong> con preguntas de <strong>100 a 500 puntos</strong>.</span>
+      </div>
+      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
+        <span style="color:var(--gold);flex-shrink:0;">⏱</span>
+        <span>Tendrás <strong>15 segundos</strong> para responder una vez que el cronómetro inicie.</span>
+      </div>
+      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
+        <span style="color:var(--gold);flex-shrink:0;">🔒</span>
+        <span>Una vez que selecciones una opción, <strong>no podrás cambiarla</strong>.</span>
+      </div>
+      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
+        <span style="color:var(--gold);flex-shrink:0;">⚡</span>
+        <span>Responder más rápido <strong>suma más puntos</strong>. ¡La velocidad importa!</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.4rem;font-weight:600;">Tu nombre completo (nombre y apellido):</div>
+  <input type="text" id="name-input" placeholder="Ej: María González" maxlength="40"
+    onkeydown="if(event.key==='Enter')confirmName()"
+    oninput="document.getElementById('name-input').style.borderColor='';const e=document.getElementById('name-error');if(e)e.remove();">
+  <button class="btn btn-primary" style="max-width:260px;" onclick="confirmName()">¡Entrar al juego! →</button>
+</div>
+<script>
+// ════════════════════════════════════════════
+// FORCED_ROLE — override para rutas limpias
+// null  → usa URL params normalmente (landing/MC)
+// 'ponente'   → pantalla/index.html
+// 'productor' → productor/index.html
+// 'jugador'   → jugador/index.html
+// ════════════════════════════════════════════
+const FORCED_ROLE = 'productor';
+
+// ════════════════════════════════════════════
+// GAME DATA
+// ════════════════════════════════════════════
+const MODULES = [
+  {
+    name: "Módulo 1: Reflujo + Estreñimiento",
+    categories: [
+      { name: "P-CAB", questions: [
+        { pts:100, q:"¿Cuál es el principal mecanismo de acción de los P-CAB?", opts:["Unión covalente a residuos de cisteína de la H+/K+ ATPasa","Bloqueo competitivo del potasio en la H+/K+ ATPasa","Bloqueo de las células delta productoras de somatostatina","Antagonismo de los receptores M2 en célula parietal"], ans:1 },
+        { pts:200, q:"¿Cuál de los siguientes correlaciona mejor con la eficacia clínica de los fármacos antisecretores en ERGE?", opts:["Vida media plasmática más prolongada","Ausencia de fuga ácida nocturna","Mantener pH intragástrico >4","Metabolismo lento por CYP 2C19"], ans:2 },
+        { pts:300, q:"¿Cuál es la característica de un fármaco considerado como la más importante por los pacientes con ERA?", opts:["Bajo costo","Mínimos eventos adversos","Dosis única al día","Rapidez de acción"], ans:3 },
+        { pts:400, q:"Los P-CAB han mostrado ser más efectivos que los IBP en la ERGE erosiva en lo siguiente, EXCEPTO:", opts:["Tasa de cicatrización de esofagitis leve","Tasa de cicatrización de esofagitis grave","Control del reflujo nocturno","Rapidez en alivio de síntomas"], ans:0 },
+        { pts:500, q:"¿Estructura química del tegoprazan?", opts:["Pirimidina","Sulfonil pirrol","Benzimidazol","Imidazopiridina"], ans:2 },
+      ]},
+      { name: "ERGE", questions: [
+        { pts:100, q:"Paciente con esofagitis B. Persiste con síntomas a pesar de IBP bid 2 meses. Nueva endoscopia negativa y una pH-impedancia con IBP mostró TEA 2% y asociación sintomática positiva con episodios de reflujo no ácido. ¿Cuál es el diagnóstico?", opts:["Pirosis funcional","Hipersensibilidad al reflujo","Sobreposición ERGE + Hipersensibilidad al reflujo","Sobreposición ERGE + Pirosis funcional"], ans:2 },
+        { pts:200, q:"¿Cuál es la característica de tegoprazan ideal para tratamiento a demanda en ERGE?", opts:["Rapidez de acción","Mantiene pH intragástrico >4 por 24 h","Sin interacción con alimentos","Todas"], ans:3 },
+        { pts:300, q:"¿Mujer 30 años, pirosis de 9 meses, endoscopia negativa, sin respuesta a IBP qd correctamente tomado. pH-impedancia sin IBP: TEA 3%, IS 74%. ¿Cuál es su conducta terapéutica?", opts:["Doble dosis de IBP","Agregar alginato","Cambiar a neuromodulador","Cambiar a P-CAB"], ans:2 },
+        { pts:400, q:"Hombre 55 años con esofagitis C y hernia hiatal de 2 cm, en esomeprazol bid por 2 meses y síntomas persistentes. Nueva endoscopia con erosiones confluentes en el 50% de la circunferencia del esófago. Manometría con aperistalsis. ¿Cuál es su conducta?", opts:["Agregar bioadhesivo con condroitin sulfato","Cambiar a Tegoprazan","Agregar famotidina nocte y procinético","Funduplicatura"], ans:1 },
+        { pts:500, q:"Mujer 22 años, 8 meses con regurgitación postprandial, sin pirosis, vómitos, ni síntomas nocturnos. Tratada con IBP bid 2 meses, sin respuesta. Endoscopia negativa. pH-impedancia sin IBP: TEA 4%, numerosos episodios de reflujo no ácidos postprandiales e IS y PAS positivos. ¿Cuál es su conducta?", opts:["Cambiar a P-CAB","Respiración diafragmática y biofeedback","Neuromodulador","Funduplicatura"], ans:1 },
+      ]},
+      { name: "Tego evidencias/H. pylori", questions: [
+        { pts:100, q:"¿En cuáles de los siguientes desenlaces, Tegoprazan fue significativamente superior a pantoprazol en pacientes con ERGE en un ECC hecho en México?", opts:["Menor frecuencia de pirosis a la semana de tratamiento","Mejoría del GERD-HRQL a los 7 días de tratamiento","Tasa de cicatrización de esofagitis a las 4 semanas","Todas"], ans:3 },
+        { pts:200, q:"En los esquemas con tegoprazan. ¿Cuál es el efecto más importante de tegoprazan para conseguir mayores tasas de erradicación de la infección por Helicobacter pylori?", opts:["Mantener un pH-intragástrico >6 desde la primera dosis","Acción bactericida","Menor interacción fármaco-farmaco con antibióticos","Disminuye la fase replicativa del H. p."], ans:0 },
+        { pts:300, q:"Hombre que vive en Tabasco con un úlcera gástrica H.p positiva. ¿Cuál es su conducta considerando efectividad y eventos adversos?", opts:["Dual: TEGO + AMO dosis altas 14 d","Concomitante: TEGO + AMO + CLA + METRO 14 d","Secuencial: IBP + AMO + CLA + METRO 14 d","Cuadruple: TEGO + BIS + DOXI + METRO 14 d"], ans:0 },
+        { pts:400, q:"Las siguientes son indicaciones emergentes de Tegoprazan que cuentan ya con alguna evidencia científica. EXCEPTO:", opts:["Esófago de Barrett","Ulceras inducidas por endoscopia (EMR, ESD)","Manifestaciones extraesofágicas de ERGE","Hemorragia de tubo digestivo alto no variceal"], ans:0 },
+        { pts:500, q:"Hombre con úlcera gástrica Hp positiva. Tratado con IBP, AMO, CLA 14 días. Prueba de aliento al mes positiva. ¿Cuál es su conducta?", opts:["Dual: TEGO + AMO dosis altas 14 d","Concomitante: TEGO + AMO + CLA + METRO 14 d","Secuencial: IBP + AMO + CLA + METRO 14 d","Cuadruple: TEGO + BIS + DOXI + METRO 14 d"], ans:3 },
+      ]},
+      { name: "Fibra / Estreñimiento", questions: [
+        { pts:100, q:"¿Mujer 33 años, 8 meses con evacuaciones 1 vez al día, en escíbalos, con pujo excesivo y evacuación incompleta. Manometría anorrectal con presiones en reposo y en contracción normales. Con el pujo, presión rectal normal, incremento de la presión del esfínter anal. ¿Cuál es la mejor conducta?", opts:["Fibra soluble","Biofeedback","Laxantes osmóticos","Prucaloprida"], ans:1 },
+        { pts:200, q:"Mujer 45 años con estreñimiento de 18 meses, evacua cada 3-5 días sin laxantes, tiene distensión abdominal. Tránsito con marcadores >72 hs; manometría anorrectal normal. ¿Cuál es el mecanismo fisiopatológico más probable?", opts:["Ausencia de reflejo rectoanal inhibitorio","Disinergia defecatoria","Disminución de contracciones gigantes migratorias","Hipersensibilidad visceral"], ans:2 },
+        { pts:300, q:"¿Cuáles son las características fisicoquímicas ideales que debe tener una fibra para el tratamiento del estreñimiento?", opts:["Fibra soluble, no fermentable, viscosa","Fibra insoluble, fermentable, viscosa","Fibra soluble, poco fermentable, no viscosa","Fibra insoluble, no fermentable, no viscosa"], ans:0 },
+        { pts:400, q:"Fibra que es poco efectiva y produce distensión y meteorismo en pacientes con estreñimiento crónico funcional", opts:["Psyllium plantago","Ispaghula","Salvado","Metilcelulosa"], ans:2 },
+        { pts:500, q:"Hallazgo histopatológico en pacientes con estreñimiento crónico refractario por inercia colónica", opts:["Melanosis coli","Disminución de células intersticiales de Cajal","Disminución de macrófagos M2","Degeneración o ausencia de células ganglionares en el plexo mientérico"], ans:1 },
+      ]},
+      { name: "Microbiota / Estreñimiento", questions: [
+        { pts:100, q:"¿Cuál es la composición de la microbiota fecal en pacientes con estreñimiento crónico?", opts:["Aumento de Firmicutes exclusivamente","Disbiosis con reducción de la diversidad microbiana","Ausencia de bacterias anaerobias","Disminución de arqueas"], ans:1 },
+        { pts:200, q:"¿Cuál es un postbiótico con evidencia clínica robusta en el manejo de la diarrea aguda en niños?", opts:["Proteína Amuc_1100 de Akkermansia muciniphila","Butirato","S. boulardii inactivado","Lactobacillus LB inactivado"], ans:3 },
+        { pts:300, q:"¿Cuál es el microorganismo productor de metano asociado a estreñimiento?", opts:["Enterococo faecium","Escherichia coli","Methanobrevibacter smithii","Faecalobacterium prausnitzii"], ans:2 },
+        { pts:400, q:"¿En qué condición los probióticos pueden ser útiles en el manejo del estreñimiento crónico funcional?", opts:["En estreñimiento leve","En estreñimiento refractario","En disinergia defecatoria","En inercia colónica"], ans:0 },
+        { pts:500, q:"Hombre de 25 años, estreñimiento crónico desde la infancia, evacua cada 5 días con laxantes, heces duras/a veces líquidas, distensión abdominal. Colon por enema con zona de transición \"en embudo\" en rectosigmoides. ¿Cuál es el hallazgo en la manometría anorrectal?", opts:["Contracción paradójica del puborrectal","Incremento de ondas lentas en reposo","Ausencia de reflejo rectoanal inhibitorio","Hiposensibilidad rectal"], ans:2 },
+      ]},
+    ]
+  },
+  {
+    name: "Módulo 2: Microbiota + SII",
+    categories: [
+      { name: "Microbiota en SII", questions: [
+        { pts:100, q:"¿Cuál es un género bacteriano aumentado en la microbiota intestinal de los pacientes con SII?", opts:["Bifidobacterium","Faecalobacterium","Enterobacteriaceae","Todos"], ans:2 },
+        { pts:200, q:"¿Especies bacterianas más frecuentes en SIBO?", opts:["Klebsiella oxitoca y E.coli","Klebsiella pneumoniae y E. Coli","Enterococcus faecalis y Salmonella sp","Streptococcus sp y Fusobacterium nucleatum"], ans:1 },
+        { pts:300, q:"¿Cuál de los siguientes cambios en la microbiota intestinal se ha descrito después de un tratamiento con Rifaximina en SII?", opts:["Eubiosis","Rebiosis","Disbiosis","No afecta la microbiota intestinal"], ans:0 },
+        { pts:400, q:"¿Cuáles han sido los resultados de los ensayos con trasplante fecal en pacientes con SII?", opts:["Mejoría de síntomas en SII-D","Mejoría de síntomas en SII-C","No concluyentes","Empeoramiento de síntomas y QoL"], ans:2 },
+        { pts:500, q:"¿Cuál es la posición de la AMG 2024 respecto al uso de probióticos en SII?", opts:["La evidencia es controversial","Usarlos únicamente como terapia adyuvante","Indicarlos por períodos cortos (1 mes), si no son útiles supenderlos","Todas"], ans:3 },
+      ]},
+      { name: "SII / Fisiopatología", questions: [
+        { pts:100, q:"Las siguientes son alteraciones motoras descritas en pacientes con SII, EXCEPTO:", opts:["Contracciones en racimos (cluster contractions) en el intestino delgado","Reflejo gastrocólico aumentado","Disminución de la fase III del complejo motor migratorio","Aumento del tránsito colónico en SII-D"], ans:2 },
+        { pts:200, q:"¿Cómo se denomina la respuesta dolorosa provocada por la distensión rectal en pacientes con SII, que se presenta a volúmenes menores que en individuos sanos?", opts:["Alodinia mecánica","Hipersensibilidad visceral","Sensibilización central","Nocicepción exacerbada"], ans:1 },
+        { pts:300, q:"Los siguientes son mecanismos fisiopatológicos en SII, EXCEPTO:", opts:["Infección gastrointestinal","Disbiosis","Autoinmunidad","Intolerancias alimentarias"], ans:2 },
+        { pts:400, q:"En relación a la permeabilidad intestinal alterada en SII, ¿Cuál de las siguientes opciones es la más consistente con los estudios clínicos?", opts:["La prueba lactulosa/manitol aumentada es concluyente","Ocurre en la mayoría de los subtipos de SII","Es un mecanismo fisiopatológico que puede ocurrir en el SII","Los probióticos corrigen el problema por incremento de expresión de ocludina"], ans:2 },
+        { pts:500, q:"¿En qué porcentaje de pacientes con SII-D la diarrea por sales biliares es responsable de los síntomas?", opts:["Menos del 10%","En el 20 al 40%","En la mitad de los casos","En >60%"], ans:1 },
+      ]},
+      { name: "SII / Tratamiento", questions: [
+        { pts:100, q:"¿Qué tipo de dieta tiene la evidencia de mejor calidad en el manejo del SII?", opts:["Dieta mediterránea","Dieta NICE","Dieta baja en FODMAP","Dieta sin gluten"], ans:2 },
+        { pts:200, q:"¿Mecanismo de acción de la dieta baja en FODMAP en SII?", opts:["Disminuye la fermentación bacteriana y el efecto osmótico de la dieta","Efecto antiinflamatorio","Incremento de bifidobacterias en la microbiota intestinal","Mejora la permeabilidad intestinal"], ans:1 },
+        { pts:300, q:"¿Cuáles son los fármacos de primera línea para el manejo del dolor en SII?", opts:["Antidepresivos tricíclicos","Opiáceos","Antiespasmódicos","Ligandos alfa 2 delta"], ans:2 },
+        { pts:400, q:"¿Cuáles son los efectos del uso de alfa-galactosidasa en el manejo del SII?", opts:["Mejora el dolor abdominal","Mejora la distensión y el meteorismo","Mejora la frecuencia y características de las evacuaciones","Produce mejoría global del SII"], ans:1 },
+        { pts:500, q:"¿Cuál de los siguientes fármacos es agonista de opiáceos, inhibidor de canales de calcio y bloqueador de canales de potasio en el intestino?", opts:["Eluxalodina","Mebeverina","Trimebutina","Plecanatida"], ans:2 },
+      ]},
+      { name: "SII / Neuromoduladores", questions: [
+        { pts:100, q:"Neuromodulador de primera elección en pacientes con SII-D", opts:["Duloxetina","Imipramina","Quetiapina","Pregabalina"], ans:1 },
+        { pts:200, q:"Neuromodulador que debe evitarse en pacientes con SII-E", opts:["Paroxetina","Escitalopram","Venlafaxina","Sertralina"], ans:0 },
+        { pts:300, q:"Neuromodulador alternativo para manejo del dolor en pacientes que no toleran los tricíclicos", opts:["Sertralina","Desvenlafaxina","Duloxetina","Mirtazapina"], ans:2 },
+        { pts:400, q:"¿Por qué funcionan los neuromoduladores en los TIIC?", opts:["Son analgésicos viscerales","Mejoran la psicomorbilidad asociada","Favorecen la neurogénesis","Todas"], ans:3 },
+        { pts:500, q:"Clase de neuromoduladores asociados a un mayor riesgo hemorragia de tubo digestivo", opts:["Tricíclicos","Inhibidores de recaptura de serotonina y noradrenalina","Azapironas","Inhibidores selectivos de la recaptura de serotonina"], ans:3 },
+      ]},
+      { name: "SII / Manejo", questions: [
+        { pts:100, q:"Son terapias psicológicas efectivas en pacientes con SII, EXCEPTO:", opts:["Hipnosis","Terapia cognitivo conductual","Moxibustión","Mindfulness asistida por computadora"], ans:2 },
+        { pts:200, q:"Mujer 32 años, 9 meses con dolor que alivia con la defecación, evacuaciones Bristol 2 en el 20% de las evacuaciones anormales, distensión objetiva y meteorismo. Sin signos de alarma. ¿Cuál es su conducta?", opts:["Dieta NICE + bromuro de pinaverio + respiración diafragmática","Dieta baja en FODMAP + trimebutina con simeticona + ejercicios hipopresivos","Dieta baja en gluten + alverina con simeticona + respiración diafragmática","Dieta baja en FODMAP + Loperamida + sertralina"], ans:1 },
+        { pts:300, q:"Mujer 20 años, 2 años con dolor abdominal y evacuaciones Bristol 1, cada 4 días. Pujo excesivo, evacuación incompleta, en escíbalos. Tránsito lento con marcadores; MAR: con aumento de presión esfinteriana con el esfuerzo defecatorio. ¿Cuál es su conducta?", opts:["Linaclotida + biofeedback","Prucaloprida + macrogol","Incremento de fibra dietaria + biofeedback","Menta piperita + macrogol"], ans:0 },
+        { pts:400, q:"Hombre 35 años, dolor abdominal que se presenta con las evacuaciones, diarrea 1 vez al día, Bristol 7 en el 30% de las evacuaciones, distensión objetiva postprandial tardía, exceso de gas. Sin signos de alarma. Pobre respuesta a loperamida y antiespasmódicos con simeticona. ¿Qué prescribe?", opts:["Dieta baja en FODMAP + Carbón activado + lidamidina","Dieta NICE + Colestiramina","Dieta baja en FODMAP + Rifaximina","Dieta mediterránea + Probióticos"], ans:2 },
+        { pts:500, q:"Mujer 41 años, dolor abdominal de 1.5 años, no asociado a la evacuación. Apendicectomía y colecistectomía. Signo de Carnet negativo. Sin datos de alarma. EGD y colonoscopia negativas, TAC contrastada normal. Perfil metabólico y de porfirinas negativos. Comorbilidades: cefalea, ataques de pánico, cistitis intersticial. Multitratada con antiespasmódicos, ansiolíticos, medicina alternativa sin mejoría. ¿Cuál es su recomendación?", opts:["Parches de buprenorfina para el dolor","Tricíclico + terapia cognitivo conductual","Interconsulta con algólogo","Respiración diafragmática + venlafaxina"], ans:1 },
+      ]},
+    ]
+  },
+  {
+    name: "Módulo 3: SII — Roma V",
+    categories: [
+      { name: "Epidemiología y Roma V", questions: [
+        { pts:100, q:"La prevalencia mundial estimada del SII utilizando criterios modernos es aproximadamente del:", opts:["1%","4%","15%",">40%"], ans:1 },
+        { pts:200, q:"La clasificación de los subtipos de SII (SII-D, SII-C, SII-M y SII-I) se basa principalmente en:", opts:["Frecuencia diaria de evacuaciones","Puntaje de Wexner","Velocidad de tránsito intestinal","Escala de Bristol"], ans:3 },
+        { pts:300, q:"El grupo etario en el que con mayor frecuencia inicia el SII es:", opts:["Infancia","Adultos jóvenes","Mayores de 50 años","Recién nacidos"], ans:1 },
+        { pts:400, q:"El SII incrementa principalmente:", opts:["Mortalidad","Frecuencia de apendicitis","Utilización de servicios médicos","Riesgo de diverticulosis"], ans:2 },
+        { pts:500, q:"Para cumplir criterios de Roma V, el dolor o malestar abdominal debe presentarse en promedio:", opts:["Un día al mes durante los últimos 3 meses","Tres días al mes durante los últimos 3 meses","Dos veces por semana durante los últimos 3 meses","Tres veces por semana durante los últimos 3 meses"], ans:1 },
+      ]},
+      { name: "Diagnóstico", questions: [
+        { pts:100, q:"Paciente de 38 años presenta dolor abdominal recurrente, 1 vez por semana, asociado a la defecación y cambios en la frecuencia de las evacuaciones desde hace 8 meses. Sin pérdida de peso, anemia ni rectorragia. El diagnóstico más probable es:", opts:["Parasitosis intestinal","Colitis microscópica","Síndrome de intestino irritable","Cáncer colorrectal"], ans:2 },
+        { pts:200, q:"¿Cuál de los siguientes hallazgos constituye un dato de alarma que obliga a ampliar el estudio de un paciente con sospecha de SII?", opts:["Distensión abdominal","Dolor abdominal con la defecación","Pérdida involuntaria de peso de >10%","Pujo defecatorio y evacuación incompleta"], ans:2 },
+        { pts:300, q:"¿Cuál es el estudio inicial más apropiado en un adulto joven con sospecha de SII sin datos de alarma?", opts:["Colonoscopia","Criterios clínicos","Tomografía abdominal","Pruebas de aliento"], ans:1 },
+        { pts:400, q:"¿Qué enfermedad debe investigarse en pacientes con criterios de Roma V para SII con diarrea que no responde a tratamiento de primera y segunda línea?", opts:["Diverticulosis","Apendicitis","Colitis pseudomembranosa","Enfermedad celíaca"], ans:3 },
+        { pts:500, q:"¿Cuál biomarcador ayuda a diferenciar SII de enfermedad inflamatoria intestinal?", opts:["Calprotectina fecal","PCR ultrasensible","Antígeno carcinoembrionario","Lactoferrina fecal"], ans:0 },
+      ]},
+      { name: "Fisiopatología", questions: [
+        { pts:100, q:"¿Cuál mecanismo NO participa de forma importante en la fisiopatología del SII?", opts:["Hipersensibilidad visceral","Alteración del eje intestino-cerebro","Trastornos de la motilidad intestinal","Inflamación autoinmune de la mucosa intestinal"], ans:3 },
+        { pts:200, q:"¿Cómo se denomina la respuesta dolorosa provocada por la distensión rectal en pacientes con SII, que se presenta a volúmenes menores que en individuos sanos?", opts:["Alodinia mecánica","Hipersensibilidad visceral","Sensibilización central","Nocicepción exacerbada"], ans:1 },
+        { pts:300, q:"En relación a la permeabilidad intestinal alterada en SII, ¿cuál de las siguientes opciones es la más consistente con los estudios clínicos?", opts:["La prueba lactulosa/manitol aumentada es concluyente","Ocurre en la mayoría de los subtipos de SII","Es un mecanismo fisiopatológico que puede ocurrir en el SII","Los probióticos corrigen el problema por incremento de expresión de ocludina"], ans:2 },
+        { pts:400, q:"¿Cuál es un género bacteriano aumentado en la microbiota intestinal de los pacientes con SII?", opts:["Bifidobacterium","Faecalobacterium","Enterobacteriaceae","Todos"], ans:2 },
+        { pts:500, q:"¿En qué porcentaje de pacientes con SII-D la diarrea por sales biliares es responsable de los síntomas?", opts:["Menos del 10%","En el 20 al 40%","En la mitad de los casos","En >70%"], ans:1 },
+      ]},
+      { name: "Tratamiento 1", questions: [
+        { pts:100, q:"¿Cuál intervención dietética tiene la mayor evidencia para pacientes seleccionados con SII?", opts:["Dieta sin gluten","Dieta baja en FODMAP","Dieta mediterránea","Dieta vegetariana"], ans:1 },
+        { pts:200, q:"¿Cuál medicamento ha demostrado beneficio en pacientes con SII con diarrea predominante?", opts:["Loperamida","Lidamidina","Diciclomina","Mesalazina"], ans:0 },
+        { pts:300, q:"En pacientes con SII y estreñimiento predominante, un tratamiento apropiado es:", opts:["Salvado","Polietilenglicol (PEG)","Lactulosa","Metronidazol"], ans:1 },
+        { pts:400, q:"¿Cuáles son los fármacos de primera línea para el manejo del dolor en SII?", opts:["Antidepresivos tricíclicos","Opiáceos","Antiespasmódicos","Ligandos alfa 2 delta"], ans:2 },
+        { pts:500, q:"¿Cuál es la recomendación de las Guías Internacionales respecto al uso de probióticos en SII?", opts:["La evidencia es controversial","Usarlos únicamente como terapia adyuvante","Indicarlos por períodos cortos (1 mes), si no son útiles suspenderlos","Todas"], ans:3 },
+      ]},
+      { name: "Tratamiento 2", questions: [
+        { pts:100, q:"¿Cuáles son los efectos del uso de alfa-galactosidasa en el manejo del SII?", opts:["Mejora el dolor abdominal","Mejora la distensión y el meteorismo","Mejora la frecuencia y características de las evacuaciones","Produce mejoría global del SII"], ans:1 },
+        { pts:200, q:"¿Cuál de los siguientes fármacos es agonista de opiáceos, inhibidor de canales de calcio y bloqueador de canales de potasio en el intestino?", opts:["Eluxalodina","Mebeverina","Trimebutina","Plecanatida"], ans:2 },
+        { pts:300, q:"Mujer 32 años, 9 meses con dolor que alivia con la defecación, evacuaciones Bristol 2 en el 20% de las evacuaciones anormales, distensión objetiva y meteorismo. Sin signos de alarma. ¿Cuál es su conducta?", opts:["Dieta NICE + bromuro de pinaverio + respiración diafragmática","Dieta baja en FODMAP + trimebutina con simeticona + ejercicios hipopresivos","Dieta baja en gluten + alverina con simeticona + respiración diafragmática","Dieta baja en FODMAP + Loperamida + sertralina"], ans:1 },
+        { pts:400, q:"Mujer 20 años, 2 años con dolor abdominal y evacuaciones Bristol 1, cada 4 días. Pujo excesivo, evacuación incompleta, en escíbalos. Tránsito lento con marcadores; MAR: con aumento de presión esfinteriana con el esfuerzo defecatorio. ¿Cuál es su conducta?", opts:["Linaclotida + biofeedback","Cinitaprida + macrogol","Incremento de fibra dietaria + biofeedback","Menta piperita + macrogol"], ans:0 },
+        { pts:500, q:"Hombre 35 años, dolor abdominal que se presenta con las evacuaciones, diarrea 1 vez al día, Bristol 7 en el 30% de las evacuaciones, distensión objetiva postprandial tardía, exceso de gas. Sin signos de alarma. Pobre respuesta a loperamida y antiespasmódicos con simeticona. ¿Qué prescribe?", opts:["Dieta baja en FODMAP + Carbón activado + lidamidina","Dieta NICE + Colestiramina","Dieta baja en FODMAP + Rifaximina","Dieta mediterránea + Probióticos"], ans:2 },
+      ]},
+    ]
+  }
+];
+// ════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════
+const state = {
+  moduleIdx: 2,   // Módulo 3 activo — SII Roma V
+  role: null,
+  isPonente: false,   // true → tablero reactivo (no broadcast, reacciona a Firebase)
+  playerName: '',
+  playerScore: 0,
+  usedCells: new Set(),
+  currentQ: null,
+  timerVal: 15,
+  timerInterval: null,
+  revealed: false,
+  prevScreen: 'board',
+  playerAnswered: false,
+  playerAnswerTime: 0,
+  playerQuestionStart: 0,
+  playerLastChosenIdx: -1,
+  playerLastQPts: 0,
+  playerLockedPts: 0,
+};
+// ════════════════════════════════════════════
+// FIREBASE
+// ════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDzfIVORStmgOgnsRHphf40LX7vpXzYvcU",
+  authDomain: "jeopardycarnot.firebaseapp.com",
+  databaseURL: "https://jeopardycarnot-default-rtdb.firebaseio.com",
+  projectId: "jeopardycarnot",
+  storageBucket: "jeopardycarnot.firebasestorage.app",
+  messagingSenderId: "134138179325",
+  appId: "1:134138179325:web:37ecdeae1a4d694c315894"
+};
+
+let db = null;
+let gameRef = null;
+let scoresRef = null;
+let playersRef = null;
+let myPlayerRef = null;
+
+/* ─── UID persistente (reconexión automática) ─────────────────────── */
+function getOrCreateUID() {
+  try {
+    let uid = localStorage.getItem('gastro_uid');
+    if (!uid) {
+      uid = 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+      localStorage.setItem('gastro_uid', uid);
+    }
+    return uid;
+  } catch(_) {
+    return 'p-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 7);
+  }
+}
+
+function autoConnectFirebase() {
+  try {
+    if (firebase.apps.length === 0) {
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
+    db = firebase.database();
+    gameRef = db.ref('game');
+    scoresRef = db.ref('scores');
+    playersRef = db.ref('players');
+    setConnStatus('connected', '🟢 Conectado');
+    return true;
+  } catch(e) {
+    setConnStatus('error', '🔴 Error');
+    return false;
+  }
+}
+
+function goSetup() {
+  // Firebase ya está configurado — ir directo al tablero
+  goMC();
+}
+
+function initFirebase() {
+  goMC();
+}
+
+function tryAutoConnect() {
+  return autoConnectFirebase();
+}
+function setConnStatus(cls, text) {
+  const el = document.getElementById('conn-status');
+  el.className = cls;
+  el.textContent = text;
+}
+// ════════════════════════════════════════════
+// FIREBASE BROADCAST / LISTEN
+// ════════════════════════════════════════════
+function fbBroadcast(data) {
+  if (!gameRef || state.isPonente) return;  // Ponente nunca emite — solo escucha
+  gameRef.set({ ...data, ts: firebase.database.ServerValue.TIMESTAMP });
+}
+function fbListenGame(callback) {
+  if (!gameRef) return;
+  gameRef.on('value', snap => {
+    const val = snap.val();
+    if (val) callback(val);
+  });
+}
+function fbSaveScore(name, pts) {
+  if (!scoresRef) {
+    // Fallback to localStorage
+    lsSaveScore(name, pts);
+    return;
+  }
+  const key = name.replace(/[.#$/[\]]/g, '_');
+  scoresRef.child(key).transaction(current => {
+    if (current === null) return { name, pts };
+    return { name: current.name, pts: (current.pts || 0) + pts };
+  });
+}
+let scoresListenerActive = false;
+let scoresListenerCallback = null;
+function fbListenScores(callback) {
+  if (!scoresRef) {
+    callback(lsGetScores());
+    return;
+  }
+  scoresListenerCallback = callback;
+  if (scoresListenerActive) {
+    // Listener ya existe — solo leer el valor actual sin agregar otro listener
+    scoresRef.once('value', snap => {
+      const val = snap.val();
+      if (!val) { callback([]); return; }
+      callback(Object.values(val).sort((a, b) => b.pts - a.pts));
+    });
+    return;
+  }
+  scoresListenerActive = true;
+  scoresRef.on('value', snap => {
+    const val = snap.val();
+    const arr = val ? Object.values(val).sort((a, b) => b.pts - a.pts) : [];
+    if (scoresListenerCallback) scoresListenerCallback(arr);
+  });
+}
+function fbResetScores() {
+  if (!scoresRef) { localStorage.removeItem('jeopardy_scores'); return; }
+  scoresRef.remove();
+  if (db) db.ref('responses').remove();
+  if (db) db.ref('players').remove();    // limpiar presencias al reiniciar
+  if (db) db.ref('answered').remove();   // limpiar registro de celdas usadas
+}
+// localStorage fallback
+function lsGetScores() {
+  try { return JSON.parse(localStorage.getItem('jeopardy_scores') || '[]'); } catch(e) { return []; }
+}
+function lsSaveScore(name, pts) {
+  const scores = lsGetScores();
+  const ex = scores.find(s => s.name === name);
+  if (ex) ex.pts += pts; else scores.push({ name, pts });
+  scores.sort((a, b) => b.pts - a.pts);
+  localStorage.setItem('jeopardy_scores', JSON.stringify(scores));
+}
+// ════════════════════════════════════════════
+// NAVIGATION
+// ════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+function selectModule(idx) {
+  state.moduleIdx = idx;
+  document.querySelectorAll('.mod-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+}
+function handleConnClick() {
+  // Solo actúa desde la pantalla de inicio
+  const landing = document.getElementById('screen-landing');
+  if (landing && landing.classList.contains('active')) {
+    goMC();
+  }
+}
+function goMC() {
+  state.role = 'mc';
+  state.usedCells = new Set();
+  // Show QR for the selected module first so participants can scan
+  qrCurrentModule = state.moduleIdx;
+  renderQR(qrCurrentModule);
+  showScreen('qr');
+}
+function goPlayer() {
+  document.getElementById('overlay-name').classList.add('show');
+}
+function showNameError(msg) {
+  let err = document.getElementById('name-error');
+  if (!err) {
+    err = document.createElement('div');
+    err.id = 'name-error';
+    err.style.cssText = 'color:#E74C3C;font-size:0.82rem;font-weight:600;margin-top:-0.3rem;margin-bottom:0.5rem;';
+    const input = document.getElementById('name-input');
+    input.parentNode.insertBefore(err, input.nextSibling);
+  }
+  err.textContent = '⚠ ' + msg;
+  document.getElementById('name-input').style.borderColor = '#E74C3C';
+}
+function confirmName() {
+  const name = document.getElementById('name-input').value.trim();
+  if (!name) { showNameError('Por favor escribe tu nombre completo.'); return; }
+  if (name.split(/\s+/).length < 2) { showNameError('Escribe nombre Y apellido para continuar.'); return; }
+  const err = document.getElementById('name-error');
+  if (err) err.remove();
+  activatePlayer(name, state.moduleIdx);
+}
+
+function activatePlayer(name, moduleIdx) {
+  state.playerName = name;
+  state.playerScore = 0;
+  state.moduleIdx = moduleIdx;
+  state.role = 'player';
+
+  // Persistir en localStorage para reconexión automática
+  try {
+    localStorage.setItem('gastro_name', name);
+    localStorage.setItem('gastro_module', String(moduleIdx));
+  } catch(_) {}
+
+  // Actualizar header del jugador
+  document.getElementById('overlay-name').classList.remove('show');
+  document.getElementById('player-name-display').textContent = name;
+  document.getElementById('player-pts-display').textContent = '0 pts';
+  const modText = document.getElementById('player-module-text');
+  if (modText) modText.textContent = MODULES[moduleIdx].name;
+
+  showScreen('player');
+
+  // Registrar presencia en Firebase con UID
+  if (playersRef) {
+    const uid = getOrCreateUID();
+    myPlayerRef = playersRef.child(uid);
+    myPlayerRef.set({ name, moduleIdx, connected: true });
+    myPlayerRef.child('connected').onDisconnect().set(false);
+  }
+
+  fbLoadAndListenMyScore(name);
+  startPlayerListening();
+}
+let myScoreRef = null;
+function fbLoadAndListenMyScore(name) {
+  if (!scoresRef) return;
+  if (myScoreRef) myScoreRef.off();  // evitar listeners duplicados
+  const key = name.replace(/[.#$/[\]]/g, '_');
+  myScoreRef = scoresRef.child(key);
+  // Escuchar en tiempo real el propio score — Firebase como fuente de verdad
+  myScoreRef.on('value', snap => {
+    const val = snap.val();
+    const totalPts = val ? (val.pts || 0) : 0;
+    state.playerScore = totalPts;
+    const el = document.getElementById('player-pts-display');
+    if (el) el.textContent = totalPts + ' pts';
+  });
+}
+// ════════════════════════════════════════════
+// BOARD
+// ════════════════════════════════════════════
+let boardConnectedRef = null;
+function startBoardStats() {
+  if (!playersRef) return;
+  if (boardConnectedRef) boardConnectedRef.off();
+  boardConnectedRef = playersRef;
+  boardConnectedRef.on('value', snap => {
+    const val = snap.val() || {};
+    const connected = Object.values(val).filter(p => p.connected === true).length;
+    const el = document.getElementById('board-connected-count');
+    if (el) el.textContent = connected;
+  });
+}
+
+function renderBoard() {
+  const mod = MODULES[state.moduleIdx];
+  document.getElementById('board-module-label').textContent = mod.name;
+  startBoardStats();
+  const grid = document.getElementById('board-grid');
+  grid.innerHTML = '';
+  mod.categories.forEach(cat => {
+    const h = document.createElement('div');
+    h.className = 'cat-header';
+    h.textContent = cat.name;
+    grid.appendChild(h);
+  });
+  for (let qi = 0; qi < 5; qi++) {
+    for (let ci = 0; ci < 5; ci++) {
+      const q = mod.categories[ci].questions[qi];
+      const key = `${ci}-${qi}`;
+      const cell = document.createElement('div');
+      const colClass = ['col-a','col-b','col-c','col-d','col-e'][ci];
+      cell.className = 'cell ' + colClass + (state.usedCells.has(key) ? ' used' : '');
+      cell.innerHTML = `<span class="pts">${q.pts}</span>`;
+      cell.onclick = () => openQuestion(ci, qi);
+      grid.appendChild(cell);
+    }
+  }
+}
+// ════════════════════════════════════════════
+// QUESTION (MC)
+// ════════════════════════════════════════════
+function openQuestion(catIdx, qIdx) {
+  const key = `${catIdx}-${qIdx}`;
+  // If already answered, open in review mode (show question + answer, no broadcast)
+  if (state.usedCells.has(key)) {
+    reviewQuestion(catIdx, qIdx);
+    return;
+  }
+  const mod = MODULES[state.moduleIdx];
+  const cat = mod.categories[catIdx];
+  const q = cat.questions[qIdx];
+  state.currentQ = { catIdx, qIdx };
+  state.revealed = false;
+  if (mcPtsCountdownInterval) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
+  document.getElementById('q-cat-label').textContent = cat.name;
+  const ptsBadge = document.getElementById('q-pts-label');
+  ptsBadge.textContent = q.pts + ' pts';
+  ptsBadge.style.background = '';
+  ptsBadge.style.color = '';
+  const ptsSub = document.getElementById('q-pts-sublabel');
+  if (ptsSub) ptsSub.setAttribute('hidden', '');
+  document.getElementById('q-text-display').textContent = q.q;
+  document.getElementById('btn-reveal').style.display = 'none';
+  document.getElementById('btn-start-wrap').style.display = 'block';
+  const _ptp = document.getElementById('post-timer-panel');
+  if (_ptp) _ptp.style.display = 'none';
+  document.getElementById('response-count').textContent = '0';
+  const optsEl = document.getElementById('q-options');
+  optsEl.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'opt-btn';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${esc(opt)}`;
+    btn.id = `opt-mc-${i}`;
+    optsEl.appendChild(btn);
+  });
+  // Limpiar respuestas anteriores (no en modo Ponente — el Productor ya lo hizo)
+  if (db && !state.isPonente) db.ref(`responses/${catIdx}_${qIdx}`).remove();
+  statsLastSnapshot = null;
+  // Broadcast question to all players (no-op si es Ponente)
+  fbBroadcast({ type: 'question', moduleIdx: state.moduleIdx, catIdx, qIdx, timeLimit: 15 });
+  // Listen for responses count
+  listenResponseCount(catIdx, qIdx);
+  // Timer starts manually — reset display to 15
+  clearTimer();
+  state.timerVal = 15;
+  updateTimerUI();
+  // Ponente: ocultar controles de operador (el Productor manda)
+  if (state.isPonente) {
+    document.getElementById('btn-start-wrap').style.display = 'none';
+    document.getElementById('btn-reveal').style.display = 'none';
+    const qa = document.querySelector('.q-actions');
+    if (qa) qa.style.display = 'none';
+  }
+  showScreen('question');
+}
+function reviewQuestion(catIdx, qIdx) {
+  // Read-only review: show question with correct answer revealed, no broadcast, no timer
+  const mod = MODULES[state.moduleIdx];
+  const cat = mod.categories[catIdx];
+  const q = cat.questions[qIdx];
+  state.currentQ = { catIdx, qIdx };
+  state.revealed = true;
+  document.getElementById('q-cat-label').textContent = cat.name + ' — REVISIÓN';
+  document.getElementById('q-pts-label').textContent = q.pts + ' pts';
+  document.getElementById('q-text-display').textContent = q.q;
+  // Hide start/timer controls, show only a back button state
+  document.getElementById('btn-reveal').style.display = 'none';
+  document.getElementById('btn-start-wrap').style.display = 'none';
+  const _ptp2 = document.getElementById('post-timer-panel');
+  if (_ptp2) _ptp2.style.display = 'none';
+  document.getElementById('response-count').textContent = '—';
+  clearTimer();
+  state.timerVal = 0;
+  updateTimerUI();
+  const optsEl = document.getElementById('q-options');
+  optsEl.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'opt-btn' + (i === q.ans ? ' correct' : ' wrong');
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${esc(opt)}`;
+    btn.id = `opt-mc-${i}`;
+    optsEl.appendChild(btn);
+  });
+  showScreen('question');
+}
+let responseCountRef = null;
+let statsCurrentQ = null;
+let statsLastSnapshot = null;          // Cache del último snapshot para no flashear
+let statsThrottleTimer = null;         // Timer para throttle
+let statsLastUpdateTime = 0;
+const STATS_THROTTLE_MS = 250;         // Máx 4 actualizaciones/seg con 300 votos simultáneos
+
+function listenResponseCount(catIdx, qIdx) {
+  if (responseCountRef) responseCountRef.off();
+  if (!db) return;
+  statsCurrentQ = { catIdx, qIdx };
+  statsLastSnapshot = null;
+  responseCountRef = db.ref(`responses/${catIdx}_${qIdx}`);
+  responseCountRef.on('value', snap => {
+    const val = snap.val();
+    statsLastSnapshot = val;                        // Guardar siempre el último valor
+    const count = val ? Object.keys(val).length : 0;
+    const el = document.getElementById('response-count');
+    if (el) el.textContent = count;
+    const elB = document.getElementById('board-answered-count');
+    if (elB) elB.textContent = count;
+    // Actualizar stats con throttle (evita 300 rebuilds/seg)
+    if (document.getElementById('overlay-stats').style.display === 'flex') {
+      const now = Date.now();
+      if (now - statsLastUpdateTime >= STATS_THROTTLE_MS) {
+        statsLastUpdateTime = now;
+        updateStatsBars(val, catIdx, qIdx);
+      } else {
+        clearTimeout(statsThrottleTimer);
+        statsThrottleTimer = setTimeout(() => {
+          statsLastUpdateTime = Date.now();
+          if (document.getElementById('overlay-stats').style.display === 'flex') {
+            updateStatsBars(statsLastSnapshot, catIdx, qIdx);
+          }
+        }, STATS_THROTTLE_MS);
+      }
+    }
+  });
+}
+function showStats() {
+  const overlay = document.getElementById('overlay-stats');
+  overlay.style.display = 'flex';
+  if (!statsCurrentQ) {
+    // Sin pregunta activa — mostrar estado vacío
+    const lbl = document.getElementById('stats-total-label');
+    if (lbl) lbl.textContent = '';
+    const c = document.getElementById('stats-bars');
+    if (c) c.innerHTML = '<div style="color:var(--dim);text-align:center;padding:2rem 1rem;font-size:0.88rem;">Selecciona una pregunta del tablero para ver estadísticas.</div>';
+    return;
+  }
+  const { catIdx, qIdx } = statsCurrentQ;
+  // Mostrar datos cacheados inmediatamente (sin flash de vacío)
+  if (statsLastSnapshot !== undefined) {
+    updateStatsBars(statsLastSnapshot, catIdx, qIdx);
+  }
+  // Refrescar desde servidor (cubre el caso post-revealAnswer donde el listener fue apagado)
+  if (db) {
+    db.ref(`responses/${catIdx}_${qIdx}`).once('value', snap => {
+      statsLastSnapshot = snap.val();
+      updateStatsBars(snap.val(), catIdx, qIdx);
+    });
+  }
+}
+function hideStats() {
+  document.getElementById('overlay-stats').style.display = 'none';
+  clearTimeout(statsThrottleTimer);
+}
+// Cerrar stats con ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') hideStats();
+});
+const STAT_COLORS = ['#39beb7','#00a6b0','#007bc3','#2162af'];
+function updateStatsBars(val, catIdx, qIdx) {
+  const mod = MODULES[state.moduleIdx];
+  const q = mod.categories[catIdx].questions[qIdx];
+  const letters = ['A','B','C','D'];
+  const counts = [0,0,0,0];
+  if (val) {
+    Object.values(val).forEach(r => {
+      if (r.chosen !== undefined && r.chosen >= 0 && r.chosen <= 3) counts[r.chosen]++;
+    });
+  }
+  const total = counts.reduce((a,b) => a+b, 0);
+  const label = document.getElementById('stats-total-label');
+  if (label) label.textContent = total + ' respuesta' + (total !== 1 ? 's' : '') + ' recibida' + (total !== 1 ? 's' : '');
+  const container = document.getElementById('stats-bars');
+  if (!container) return;
+  container.innerHTML = q.opts.map((opt, i) => {
+    const pct = total > 0 ? Math.round((counts[i] / total) * 100) : 0;
+    const isCorrect = i === q.ans;
+    const barColor = isCorrect && state.revealed ? '#4ade80' : STAT_COLORS[i];
+    return `
+      <div style="background:rgba(255,255,255,0.04);border-radius:8px;padding:0.75rem 1rem;border:1px solid rgba(255,255,255,0.07);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span style="background:${barColor};color:#fff;font-weight:900;font-size:0.8rem;padding:0.15rem 0.5rem;border-radius:4px;min-width:22px;text-align:center;">${letters[i]}</span>
+            <span style="font-size:0.82rem;color:${isCorrect && state.revealed ? '#4ade80' : 'var(--off-white)'};font-weight:${isCorrect && state.revealed ? '700' : '400'};max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(opt)}${isCorrect && state.revealed ? ' ✓' : ''}</span>
+          </div>
+          <span style="font-size:1rem;font-weight:900;color:${barColor};min-width:44px;text-align:right;">${pct}%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.08);border-radius:4px;height:10px;overflow:hidden;">
+          <div style="height:100%;background:${barColor};width:${pct}%;border-radius:4px;transition:width 0.6s ease;"></div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--dim);margin-top:0.3rem;">${counts[i]} voto${counts[i] !== 1 ? 's' : ''}</div>
+      </div>`;
+  }).join('');
+}
+function showPostTimerPanel() {
+  const panel = document.getElementById('post-timer-panel');
+  if (panel) panel.style.display = 'block';
+}
+function revealAnswer() {
+  if (state.revealed) return;
+  state.revealed = true;
+  const panel = document.getElementById('post-timer-panel');
+  if (panel) panel.style.display = 'none';
+  if (mcPtsCountdownInterval) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
+  clearTimer();
+  if (responseCountRef) responseCountRef.off();
+  const mod = MODULES[state.moduleIdx];
+  const { catIdx, qIdx } = state.currentQ;
+  const q = mod.categories[catIdx].questions[qIdx];
+  q.opts.forEach((_, i) => {
+    const el = document.getElementById(`opt-mc-${i}`);
+    if (el) el.classList.add(i === q.ans ? 'correct' : 'wrong');
+  });
+  document.getElementById('btn-reveal').style.display = 'none';
+  state.usedCells.add(`${catIdx}-${qIdx}`);
+  fbBroadcast({ type: 'reveal', catIdx, qIdx, ans: q.ans });
+}
+function backToBoard() {
+  if (mcPtsCountdownInterval) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
+  clearTimer();
+  if (state.currentQ && !state.revealed) revealAnswer();
+  renderBoard();
+  fbBroadcast({ type: 'idle' });
+  showScreen('board');
+}
+function resetBoard() {
+  if (!confirm('¿Reiniciar tablero y marcador?')) return;
+  state.usedCells = new Set();
+  fbResetScores();
+  fbBroadcast({ type: 'idle' });
+  renderBoard();
+}
+// ════════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════════
+function startTimerManual() {
+  // Hide the start button, show reveal button
+  const startWrap = document.getElementById('btn-start-wrap');
+  const revealBtn = document.getElementById('btn-reveal');
+  if (startWrap) startWrap.style.display = 'none';
+  if (revealBtn) revealBtn.style.display = 'inline-block';
+  // Play start sound (if available)
+  try {
+    const snd = new Audio('./start.mp3');
+    snd.play().catch(() => {});
+  } catch(e) {}
+  // Start pts countdown on MC screen (q-pts-label)
+  startMCPtsCountdown(15);
+  // Start local timer on MC
+  startTimer(15);
+  // Broadcast timer_start so all players begin their countdowns simultaneously
+  fbBroadcast({ type: 'timer_start', timeLimit: 15 });
+}
+function startMCPtsCountdown(secs) {
+  if (mcPtsCountdownInterval) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
+  const { catIdx, qIdx } = state.currentQ || {};
+  if (catIdx === undefined) return;
+  const maxPts = MODULES[state.moduleIdx].categories[catIdx].questions[qIdx].pts;
+  const minPts = Math.max(20, Math.floor(maxPts * 0.2));
+  const totalDrop = maxPts - minPts;
+  const intervalMs = 100;
+  const steps = (secs * 1000) / intervalMs;
+  const dropPerStep = totalDrop / steps;
+  let currentPts = maxPts;
+  const badge = document.getElementById('q-pts-label');
+  const sublabel = document.getElementById('q-pts-sublabel');
+  if (sublabel) sublabel.removeAttribute('hidden');
+  mcPtsCountdownInterval = setInterval(() => {
+    currentPts = Math.max(minPts, currentPts - dropPerStep);
+    const rounded = Math.round(currentPts);
+    if (badge) {
+      badge.textContent = rounded + ' pts';
+      const ratio = (currentPts - minPts) / (maxPts - minPts || 1);
+      badge.style.background = ratio > 0.5 ? 'var(--gold)' : ratio > 0.2 ? '#E67E22' : '#E74C3C';
+      badge.style.color = ratio > 0.2 ? 'var(--navy)' : 'var(--white)';
+    }
+    if (currentPts <= minPts) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
+  }, intervalMs);
+}
+function startTimer(secs) {
+  clearTimer();
+  state.timerVal = secs;
+  updateTimerUI();
+  state.timerInterval = setInterval(() => {
+    state.timerVal--;
+    updateTimerUI();
+    if (state.timerVal <= 0) { clearTimer(); if (!state.revealed) showPostTimerPanel(); }
+  }, 1000);
+}
+function clearTimer() {
+  if (state.timerInterval) { clearInterval(state.timerInterval); state.timerInterval = null; }
+}
+function updateTimerUI() {
+  const d = document.getElementById('timer-display');
+  const b = document.getElementById('timer-bar');
+  if (!d || !b) return;
+  const pct = (state.timerVal / 15) * 100;
+  d.textContent = state.timerVal;
+  b.style.width = pct + '%';
+  const color = state.timerVal > 7 ? 'var(--gold)' : state.timerVal > 3 ? '#E67E22' : '#E74C3C';
+  b.style.background = color;
+  d.style.color = color;
+}
+// ════════════════════════════════════════════
+// SCOREBOARD
+// ════════════════════════════════════════════
+let scoresListener = null;
+function showScores() {
+  state.prevScreen = document.querySelector('.screen.active')?.id?.replace('screen-','') || 'board';
+  showScreen('scores');
+  if (scoresListener) return;
+  fbListenScores(renderScores);
+}
+function backFromScores() { showScreen(state.prevScreen); }
+function renderScores(scores) {
+  const el = document.getElementById('score-table');
+  if (!scores || scores.length === 0) {
+    el.innerHTML = '<p style="text-align:center;color:var(--dim);margin-top:2rem;">Sin puntuaciones aún.<br>Los participantes deben entrar como jugadores.</p>';
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  const rankCls = ['g','s','b'];
+  el.innerHTML = scores.slice(0, 25).map((s, i) => `
+    <div class="score-row">
+      <div class="score-rank ${rankCls[i]||''}">${medals[i]||(i+1)}</div>
+      <div class="score-name">${esc(s.name)}</div>
+      <div class="score-pts">${s.pts} pts</div>
+    </div>`).join('');
+}
+// ════════════════════════════════════════════
+// QR CODE
+// ════════════════════════════════════════════
+let qrGenerated = false;
+const GAME_URL = 'https://polar-multimedia.github.io/jeoparsii/';
+let qrCurrentModule = 2;
+
+function moduleUrl(idx) {
+  // URL limpia de la nueva arquitectura — siempre apunta a /jugador/
+  return GAME_URL + 'jugador/';
+}
+
+function showQR() {
+  qrCurrentModule = state.moduleIdx;
+  renderQR(qrCurrentModule);
+  showScreen('qr');
+}
+
+function switchQR(idx) {
+  qrCurrentModule = idx;
+  document.querySelectorAll('#screen-qr .mod-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+  renderQR(idx);
+}
+
+function renderQR(idx) {
+  const url = moduleUrl(idx);
+  const labels = ['Módulo 1 — Reflujo + Estreñimiento', 'Módulo 2 — Microbiota + SII', 'Módulo 3 — SII · Roma V'];
+  document.getElementById('qr-module-label').textContent = labels[idx];
+  document.getElementById('qr-url-display').textContent = url;
+  const container = document.getElementById('qr-container');
+  container.innerHTML = '';
+  try {
+    new QRCode(container, {
+      text: url, width: 240, height: 240,
+      colorDark: '#0A1628', colorLight: '#FFFFFF',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    container.innerHTML = `<p style="color:#333;font-family:monospace;font-size:0.72rem;max-width:240px;word-break:break-all;">${url}</p>`;
+  }
+}
+
+function copyJoinUrl() {
+  const url = moduleUrl(qrCurrentModule);
+  navigator.clipboard.writeText(url).then(() => alert('URL copiada al portapapeles')).catch(() => alert(url));
+}
+// ════════════════════════════════════════════
+// PLAYER LOGIC
+// ════════════════════════════════════════════
+let playerGameListener = false;
+let playerClientTimerInterval = null;
+let playerTimerStart = 0;
+let playerTimerLimit = 15;
+let currentDisplayedPts = 0;
+let ptsCountdownInterval = null;
+let mcPtsCountdownInterval = null;
+function startPlayerListening() {
+  if (playerGameListener) return;
+  playerGameListener = true;  // marcar ANTES de llamar — evita doble registro
+  fbListenGame(handleGameEvent);
+}
+function handleGameEvent(data) {
+  if (data.type === 'question') {
+    if (data.moduleIdx !== state.moduleIdx) return;
+    state.playerAnswered = false;
+    state.playerQuestionStart = 0;           // Se setea al iniciar cronómetro, no antes
+    state.playerLockedPts = 0;
+    state.playerCurrentCatIdx = data.catIdx;
+    state.playerCurrentQIdx = data.qIdx;
+    stopPtsCountdown();
+    playerTimerLimit = data.timeLimit || 15;
+    // Show question but DON'T start timer yet — waits for timer_start event
+    renderPlayerQuestion(data.catIdx, data.qIdx);
+    // Reset timer bar to full without counting down
+    const b = document.getElementById('player-timer-bar');
+    if (b) { b.style.width = '100%'; b.style.background = 'var(--gold)'; }
+  } else if (data.type === 'timer_start') {
+    // MC pressed "Iniciar Cronómetro" — reveal options y empezar a medir velocidad
+    const now = Date.now();
+    playerTimerStart = now;
+    state.playerQuestionStart = now;         // La velocidad se mide desde aquí
+    const wrap = document.getElementById('player-opts-wrap');
+    if (wrap) { wrap.style.opacity = '1'; wrap.style.pointerEvents = 'auto'; }
+    const waitMsg = document.getElementById('waiting-timer-msg');
+    if (waitMsg) waitMsg.style.display = 'none';
+    const ptsAvail = document.getElementById('player-pts-available');
+    if (ptsAvail) ptsAvail.style.display = 'block';
+    // Get pts from actual question data
+    const _qPts = (state.playerCurrentCatIdx !== undefined && state.playerCurrentQIdx !== undefined)
+      ? MODULES[state.moduleIdx].categories[state.playerCurrentCatIdx].questions[state.playerCurrentQIdx].pts
+      : (state.playerLastQPts || 100);
+    state.playerLastQPts = _qPts;
+    startPtsCountdown(_qPts, data.timeLimit || playerTimerLimit || 15);
+    startPlayerClientTimer(data.timeLimit || playerTimerLimit || 15);
+  } else if (data.type === 'reveal') {
+    stopPlayerClientTimer();
+    stopPtsCountdown();
+    showPlayerReveal(data.ans);
+  } else if (data.type === 'idle') {
+    stopPlayerClientTimer();
+    stopPtsCountdown();
+    showPlayerIdle();
+  }
+}
+function startPlayerClientTimer(secs) {
+  stopPlayerClientTimer();
+  let val = secs;
+  updatePlayerTimerBar(val, secs);
+  playerClientTimerInterval = setInterval(() => {
+    val--;
+    updatePlayerTimerBar(val, secs);
+    if (val <= 0) {
+      stopPlayerClientTimer();
+      stopPtsCountdown();
+      // Disable answer buttons and show "tiempo terminado" overlay
+      document.querySelectorAll('.player-opt').forEach(b => { b.disabled = true; });
+      const fb = document.getElementById('player-feedback');
+      if (fb && !state.playerAnswered) {
+        fb.innerHTML = `<div style="margin-top:0.8rem;padding:0.75rem 1rem;border-radius:8px;background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.35);text-align:center;">
+          <div style="font-size:0.95rem;font-weight:800;color:var(--gold-light);letter-spacing:0.06em;">⏱ Tiempo terminado</div>
+          <div style="font-size:0.78rem;color:var(--dim);margin-top:0.25rem;">Esperando al Dr. Valdovinos…</div>
+        </div>`;
+      }
+    }
+  }, 1000);
+}
+function stopPlayerClientTimer() {
+  if (playerClientTimerInterval) { clearInterval(playerClientTimerInterval); playerClientTimerInterval = null; }
+}
+function startPtsCountdown(maxPts, secs) {
+  stopPtsCountdown();
+  const minPts = Math.max(20, Math.floor(maxPts * 0.2));
+  currentDisplayedPts = maxPts;
+  const el = document.getElementById('player-pts-counter');
+  if (el) el.textContent = maxPts;
+  const totalDrop = maxPts - minPts;
+  const intervalMs = 100; // update every 100ms for smooth countdown
+  const steps = (secs * 1000) / intervalMs;
+  const dropPerStep = totalDrop / steps;
+  let currentPts = maxPts;
+  ptsCountdownInterval = setInterval(() => {
+    currentPts = Math.max(minPts, currentPts - dropPerStep);
+    currentDisplayedPts = Math.round(currentPts);
+    const counter = document.getElementById('player-pts-counter');
+    if (counter) {
+      counter.textContent = currentDisplayedPts;
+      // Color shift as pts decrease
+      const ratio = (currentPts - minPts) / (maxPts - minPts);
+      if (ratio > 0.5) {
+        counter.style.color = 'var(--gold-light)';
+      } else if (ratio > 0.2) {
+        counter.style.color = '#E67E22';
+      } else {
+        counter.style.color = '#E74C3C';
+      }
+    }
+    if (currentPts <= minPts) stopPtsCountdown();
+  }, intervalMs);
+}
+function stopPtsCountdown() {
+  if (ptsCountdownInterval) { clearInterval(ptsCountdownInterval); ptsCountdownInterval = null; }
+}
+function updatePlayerTimerBar(val, max) {
+  const b = document.getElementById('player-timer-bar');
+  if (!b) return;
+  const pct = Math.max(0, (val / max) * 100);
+  b.style.width = pct + '%';
+  b.style.background = val > 7 ? 'var(--gold)' : val > 3 ? '#E67E22' : '#E74C3C';
+}
+function renderPlayerQuestion(catIdx, qIdx) {
+  const mod = MODULES[state.moduleIdx];
+  const q = mod.categories[catIdx].questions[qIdx];
+  const letters = ['A','B','C','D'];
+  document.getElementById('player-content').innerHTML = `
+    <div class="player-q-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem;">
+        <div style="font-size:0.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:0.08em;">${esc(mod.categories[catIdx].name)}</div>
+        <div style="background:var(--gold);color:var(--navy);font-weight:bold;padding:0.18rem 0.6rem;border-radius:12px;font-size:0.82rem;">${q.pts} pts</div>
+      </div>
+      <div class="player-timer-bar-wrap"><div class="player-timer-bar" id="player-timer-bar" style="width:100%"></div></div>
+      <div class="player-q-text">${esc(q.q)}</div>
+      <div id="player-opts-wrap" style="opacity:0;pointer-events:none;transition:opacity 0.4s ease;">
+        <div style="text-align:center;font-size:0.75rem;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.6rem;font-weight:700;" id="waiting-timer-msg">⏳ Esperando inicio del cronómetro…</div>
+        <div id="player-pts-available" style="display:none;text-align:center;margin-bottom:0.7rem;">
+          <span style="font-size:0.7rem;color:var(--dim);letter-spacing:0.08em;text-transform:uppercase;">Puntos disponibles</span><br>
+          <span id="player-pts-counter" style="font-size:2rem;font-weight:900;color:var(--gold-light);line-height:1.1;">${q.pts}</span>
+        </div>
+        <div class="player-opts">
+          ${q.opts.map((opt, i) => `
+            <button class="player-opt" id="popt-${i}" onclick="playerAnswer(${catIdx},${qIdx},${i})">
+              <strong>${letters[i]}.</strong> ${esc(opt)}
+            </button>`).join('')}
+        </div>
+      </div>
+      <div id="player-feedback"></div>
+    </div>`;
+}
+function playerAnswer(catIdx, qIdx, chosenIdx) {
+  if (state.playerAnswered) return;
+  state.playerAnswered = true;
+  state.playerAnswerTime = (Date.now() - state.playerQuestionStart) / 1000;
+  state.playerLastChosenIdx = chosenIdx;
+  state.playerLastQPts = MODULES[state.moduleIdx].categories[catIdx].questions[qIdx].pts;
+  // Lock in the pts being displayed right now — stop countdown
+  state.playerLockedPts = currentDisplayedPts;
+  stopPtsCountdown();
+  document.querySelectorAll('.player-opt').forEach(b => b.disabled = true);
+  const chosen = document.getElementById(`popt-${chosenIdx}`);
+  if (chosen) chosen.classList.add('selected');
+  // Write response to Firebase so MC sees count
+  if (db) {
+    // Clave única: nombre + timestamp + random → evita colisión con 250 usuarios simultáneos
+    const rand = Math.random().toString(36).slice(2, 7);
+    const key = state.playerName.replace(/[.#$/[\]]/g, '_') + '_' + Date.now() + '_' + rand;
+    db.ref(`responses/${catIdx}_${qIdx}/${key}`).set({
+      name: state.playerName,
+      chosen: chosenIdx,
+      time: state.playerAnswerTime
+    });
+  }
+}
+function showPlayerReveal(correctAns) {
+  const letters = ['A','B','C','D'];
+  const chosen = state.playerAnswered ? state.playerLastChosenIdx : -1;
+  document.querySelectorAll('.player-opt').forEach((b, i) => {
+    if (i === correctAns) {
+      b.classList.add('correct');                          // siempre verde
+    } else if (i === chosen) {
+      b.classList.add('wrong');                            // solo la elegida → rojo
+    } else {
+      b.style.opacity = '0.35';                           // el resto → dimmed
+    }
+  });
+  const feedback = document.getElementById('player-feedback');
+  if (!feedback) return;
+  if (!state.playerAnswered) {
+    feedback.innerHTML = '<div class="feedback-msg slow">⏱ No respondiste a tiempo</div>';
+    return;
+  }
+  const correct = state.playerLastChosenIdx === correctAns;
+  if (correct) {
+    // Use the pts that were displayed when player tapped — no post-hoc calculation
+    const earned = state.playerLockedPts || Math.max(20, Math.floor((state.playerLastQPts || 100) * 0.2));
+    // Guardar en Firebase — el listener fbLoadAndListenMyScore actualiza el display automáticamente
+    fbSaveScore(state.playerName, earned);
+    feedback.innerHTML = `<div class="feedback-msg correct">✓ ¡Correcto! +${earned} pts <span style="opacity:0.7;font-size:0.85rem;">(${state.playerAnswerTime.toFixed(1)}s)</span></div>`;
+  } else {
+    feedback.innerHTML = `<div class="feedback-msg wrong">✗ Incorrecto — Respuesta: ${letters[correctAns]}</div>`;
+  }
+}
+function showPlayerIdle() {
+  document.getElementById('player-content').innerHTML = `
+    <div class="player-waiting">
+      <div style="font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;letter-spacing:0.06em;line-height:1;margin-bottom:0.15rem;background:linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">JeoparSII!</div>
+      <div style="font-size:0.72rem;color:rgba(245,200,66,0.55);letter-spacing:0.1em;font-style:italic;margin-bottom:1.2rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
+      <span class="dot"></span> Conectado — esperando pregunta…<br>
+      <span style="font-size:0.82rem;color:var(--dim);">El Productor abrirá la siguiente pregunta</span><br><br>
+      <div style="background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);border-radius:10px;padding:0.75rem 1rem;margin:0.5rem 0 1rem;text-align:center;max-width:280px;margin-left:auto;margin-right:auto;">
+        <div style="font-size:0.9rem;margin-bottom:0.2rem;">✈️</div>
+        <div style="font-size:0.78rem;color:var(--gold-light);font-weight:700;margin-bottom:0.15rem;">Top 3 de este módulo → DDW 2027</div>
+        <div style="font-size:0.68rem;color:var(--dim);line-height:1.4;">Inscripción · vuelo · hospedaje<br>Washington, DC · 15–18 mayo</div>
+      </div>
+      <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);" onclick="showScores()">🏆 Ver marcador</button>
+    </div>`;
+}
+// ════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════
+function esc(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(String(str)));
+  return d.innerHTML;
+}
+// ════════════════════════════════════════════
+// PONENTE MODE — tablero reactivo (proyector)
+// El Productor manda; el Ponente solo escucha y muestra
+// ════════════════════════════════════════════
+function startPonentListening() {
+  fbListenGame(data => {
+    if (!data || !data.type) return;
+    if (data.type === 'question') {
+      if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
+      openQuestion(data.catIdx, data.qIdx);
+    } else if (data.type === 'timer_start') {
+      startTimerManual();   // isPonente=true bloquea el re-broadcast automáticamente
+    } else if (data.type === 'reveal') {
+      if (!state.revealed) revealAnswer();
+    } else if (data.type === 'idle') {
+      clearTimer();
+      renderBoard();
+      showScreen('board');
+    }
+  });
+}
+// ════════════════════════════════════════════
+// PRODUCTOR PANEL
+// ════════════════════════════════════════════
+const PROD = {
+  gameState: 'board',   // 'board' | 'question' | 'timer' | 'timer_ended' | 'revealed'
+  currentCat: -1,
+  currentQ: -1,
+  usedCells: new Set(),
+  timerInterval: null,
+  timerVal: 15,
+};
+let prodConnectedRef = null;
+let prodResponseRef  = null;
+
+const PROD_STATE_NAMES = {
+  board:        'Tablero — elige una pregunta',
+  question:     '📋 Pregunta abierta',
+  timer:        '⏱ Cronómetro corriendo',
+  timer_ended:  '⏱ Tiempo terminado',
+  revealed:     '✅ Respuesta revelada',
+};
+
+function goProductor() {
+  state.role = 'productor';
+  showScreen('productor');
+  setTimeout(() => {
+    startProductorStats();
+    if (db) {
+      db.ref('answered').once('value', snap => {
+        const val = snap.val() || {};
+        Object.keys(val).forEach(k => PROD.usedCells.add(k.replace('_', '-')));
+        renderProductorBoard();
+        updateProductorUI();
+      });
+    } else {
+      renderProductorBoard();
+      updateProductorUI();
+    }
+  }, 150);
+}
+
+function startProductorStats() {
+  if (!playersRef) return;
+  if (prodConnectedRef) prodConnectedRef.off();
+  prodConnectedRef = playersRef;
+  prodConnectedRef.on('value', snap => {
+    const val = snap.val() || {};
+    const connected = Object.values(val).filter(p => p.connected === true).length;
+    const el = document.getElementById('prod-connected');
+    if (el) el.textContent = connected;
+  });
+}
+
+function renderProductorBoard() {
+  const mod = MODULES[2]; // Módulo 3 — SII Roma V
+  const grid = document.getElementById('prod-board-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  mod.categories.forEach(cat => {
+    const h = document.createElement('div');
+    h.className = 'prod-cat-header';
+    h.textContent = cat.name;
+    grid.appendChild(h);
+  });
+  for (let qi = 0; qi < 5; qi++) {
+    for (let ci = 0; ci < 5; ci++) {
+      const q = mod.categories[ci].questions[qi];
+      const key = `${ci}-${qi}`;
+      const cell = document.createElement('button');
+      const colClass = ['prod-col-a','prod-col-b','prod-col-c','prod-col-d','prod-col-e'][ci];
+      cell.className = 'prod-cell ' + colClass + (PROD.usedCells.has(key) ? ' prod-used' : '');
+      cell.disabled = PROD.usedCells.has(key);
+      cell.textContent = q.pts;
+      cell.onclick = () => prodOpenQuestion(ci, qi);
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function prodOpenQuestion(catIdx, qIdx) {
+  const key = `${catIdx}-${qIdx}`;
+  if (PROD.usedCells.has(key)) return;
+  const mod = MODULES[2];
+  const cat = mod.categories[catIdx];
+  const q   = cat.questions[qIdx];
+  PROD.currentCat = catIdx;
+  PROD.currentQ   = qIdx;
+  PROD.gameState  = 'question';
+  // Limpiar respuestas anteriores
+  if (db) db.ref(`responses/${catIdx}_${qIdx}`).remove();
+  // Broadcast a jugadores y Ponente
+  fbBroadcast({ type: 'question', moduleIdx: 2, catIdx, qIdx, timeLimit: 15 });
+  // Escuchar respuestas en tiempo real
+  if (prodResponseRef) prodResponseRef.off();
+  if (db) {
+    prodResponseRef = db.ref(`responses/${catIdx}_${qIdx}`);
+    prodResponseRef.on('value', snap => {
+      const count = snap.val() ? Object.keys(snap.val()).length : 0;
+      const el = document.getElementById('prod-answered');
+      if (el) el.textContent = count;
+    });
+  }
+  // Mostrar detalle de la pregunta
+  const letters = ['A','B','C','D'];
+  const content = document.getElementById('prod-question-content');
+  if (content) {
+    content.innerHTML = `
+      <div class="prod-q-cat">${esc(cat.name)}</div>
+      <div class="prod-q-pts">${q.pts} pts</div>
+      <div class="prod-q-text">${esc(q.q)}</div>
+      <div class="prod-q-opts">
+        ${q.opts.map((opt, i) => `
+          <div class="prod-q-opt" id="prod-opt-${i}">
+            <strong>${letters[i]}.</strong> ${esc(opt)}
+          </div>`).join('')}
+      </div>`;
+  }
+  document.getElementById('prod-board-wrap').style.display = 'none';
+  document.getElementById('prod-question-wrap').style.display = 'block';
+  const timerEl = document.getElementById('prod-timer-display');
+  if (timerEl) timerEl.style.display = 'none';
+  updateProductorUI();
+}
+
+function prodStartTimer() {
+  if (PROD.gameState !== 'question') return;
+  PROD.gameState = 'timer';
+  PROD.timerVal  = 15;
+  fbBroadcast({ type: 'timer_start', timeLimit: 15 });
+  const timerEl = document.getElementById('prod-timer-display');
+  if (timerEl) { timerEl.textContent = '15'; timerEl.style.color = 'var(--gold-light)'; timerEl.style.display = 'block'; }
+  if (PROD.timerInterval) clearInterval(PROD.timerInterval);
+  PROD.timerInterval = setInterval(() => {
+    PROD.timerVal--;
+    if (timerEl) {
+      timerEl.textContent = PROD.timerVal;
+      timerEl.style.color = PROD.timerVal > 7 ? 'var(--gold-light)' : PROD.timerVal > 3 ? '#E67E22' : '#E74C3C';
+    }
+    if (PROD.timerVal <= 0) {
+      clearInterval(PROD.timerInterval); PROD.timerInterval = null;
+      PROD.gameState = 'timer_ended';
+      updateProductorUI();
+    }
+  }, 1000);
+  updateProductorUI();
+}
+
+function prodReveal() {
+  if (!['timer','timer_ended','question'].includes(PROD.gameState)) return;
+  if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
+  PROD.gameState = 'revealed';
+  const mod = MODULES[2];
+  const q   = mod.categories[PROD.currentCat].questions[PROD.currentQ];
+  fbBroadcast({ type: 'reveal', catIdx: PROD.currentCat, qIdx: PROD.currentQ, ans: q.ans });
+  // Ocultar cronómetro, mostrar respuesta correcta
+  const timerEl = document.getElementById('prod-timer-display');
+  if (timerEl) timerEl.style.display = 'none';
+  document.querySelectorAll('.prod-q-opt').forEach((el, i) => {
+    if (i === q.ans) el.classList.add('prod-q-correct');
+    else el.style.opacity = '0.35';
+  });
+  // Marcar celda como usada
+  const key = `${PROD.currentCat}-${PROD.currentQ}`;
+  PROD.usedCells.add(key);
+  if (db) db.ref(`answered/${key.replace('-','_')}`).set(true);
+  if (prodResponseRef) prodResponseRef.off();
+  updateProductorUI();
+}
+
+function prodBackToBoard() {
+  if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
+  if (prodResponseRef)    { prodResponseRef.off(); prodResponseRef = null; }
+  PROD.gameState  = 'board';
+  PROD.currentCat = -1;
+  PROD.currentQ   = -1;
+  fbBroadcast({ type: 'idle' });
+  renderProductorBoard();
+  document.getElementById('prod-board-wrap').style.display = 'block';
+  document.getElementById('prod-question-wrap').style.display = 'none';
+  const timerEl = document.getElementById('prod-timer-display');
+  if (timerEl) timerEl.style.display = 'none';
+  updateProductorUI();
+}
+
+function prodResetBoard() {
+  if (!confirm('¿Reiniciar tablero y marcador?\nSe borrarán todos los puntos y respuestas.')) return;
+  PROD.usedCells  = new Set();
+  PROD.gameState  = 'board';
+  PROD.currentCat = -1;
+  PROD.currentQ   = -1;
+  fbResetScores();
+  fbBroadcast({ type: 'idle' });
+  document.getElementById('prod-board-wrap').style.display = 'block';
+  document.getElementById('prod-question-wrap').style.display = 'none';
+  renderProductorBoard();
+  updateProductorUI();
+}
+
+function updateProductorUI() {
+  // Estado textual
+  const stateEl = document.getElementById('prod-state-name');
+  if (stateEl) stateEl.textContent = PROD_STATE_NAMES[PROD.gameState] || PROD.gameState;
+  // Botones del dock
+  const dockBtn = document.getElementById('prod-dock-btn');
+  const backBtn = document.getElementById('prod-back-btn');
+  if (!dockBtn || !backBtn) return;
+  if (PROD.gameState === 'board') {
+    dockBtn.style.display = 'none';
+    backBtn.style.display = 'none';
+  } else if (PROD.gameState === 'question') {
+    dockBtn.style.display = 'block';
+    dockBtn.textContent   = '▶ INICIAR CRONÓMETRO';
+    dockBtn.className     = 'prod-btn-primary';
+    dockBtn.onclick       = prodStartTimer;
+    backBtn.style.display = 'block';
+  } else if (PROD.gameState === 'timer') {
+    dockBtn.style.display = 'block';
+    dockBtn.textContent   = '✅ REVELAR RESPUESTA';
+    dockBtn.className     = 'prod-btn-primary prod-green';
+    dockBtn.onclick       = prodReveal;
+    backBtn.style.display = 'block';
+  } else if (PROD.gameState === 'timer_ended') {
+    dockBtn.style.display = 'block';
+    dockBtn.textContent   = '✅ REVELAR RESPUESTA';
+    dockBtn.className     = 'prod-btn-primary prod-green prod-pulse';
+    dockBtn.onclick       = prodReveal;
+    backBtn.style.display = 'block';
+  } else if (PROD.gameState === 'revealed') {
+    dockBtn.style.display = 'block';
+    dockBtn.textContent   = '← VOLVER AL TABLERO';
+    dockBtn.className     = 'prod-btn-secondary-dock';
+    dockBtn.onclick       = prodBackToBoard;
+    backBtn.style.display = 'none';
+  }
+}
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+// ════════════════════════════════════════════
+// LIVE SCORES VIEW (?view=scores)
+// ════════════════════════════════════════════
+function initLiveScoresView() {
+  // Ocultar todo el resto del juego
+  document.querySelectorAll('.screen, #overlay-name').forEach(el => {
+    el.style.display = 'none';
+  });
+  document.body.style.background = 'var(--navy)';
+  const view = document.getElementById('live-scores-view');
+  view.classList.add('active');
+  // Conectar Firebase y escuchar scores en tiempo real
+  autoConnectFirebase();
+  // Esperar a que Firebase conecte y luego suscribirse
+  let attempts = 0;
+  const waitAndListen = () => {
+    if (scoresRef) {
+      let lsvThrottle = null;
+      let lsvLastSnap = null;
+      scoresRef.on('value', snap => {
+        lsvLastSnap = snap;
+        // Throttle: max 1 render cada 600ms — evita congelar pantalla con 200+ updates seguidos
+        if (lsvThrottle) return;
+        lsvThrottle = setTimeout(() => {
+          lsvThrottle = null;
+          if (!lsvLastSnap) return;
+          const val = lsvLastSnap.val();
+          const scores = val ? Object.values(val).sort((a, b) => b.pts - a.pts) : [];
+          renderLiveScores(scores);
+        }, 600);
+      });
+    } else if (attempts++ < 20) {
+      setTimeout(waitAndListen, 300);
+    }
+  };
+  waitAndListen();
+}
+
+function renderLiveScores(scores) {
+  const table = document.getElementById('lsv-table');
+  const count = document.getElementById('lsv-count');
+  if (count) count.textContent = scores.length
+    ? `${scores.length} participante${scores.length !== 1 ? 's' : ''} en tabla`
+    : '';
+  if (!scores.length) {
+    table.innerHTML = `<div class="lsv-empty">⏳ Esperando puntuaciones…<br><span style="font-size:0.85rem;">Los participantes aparecerán aquí al responder</span></div>`;
+    return;
+  }
+  const medals = ['🥇','🥈','🥉'];
+  table.innerHTML = scores.slice(0, 30).map((s, i) => `
+    <div class="lsv-row rank-${i < 3 ? i+1 : 0}" style="animation-delay:${i*0.04}s">
+      <div class="lsv-rank">${medals[i] || (i + 1)}</div>
+      <div class="lsv-name">
+        ${esc(s.name)}
+        ${i < 3 ? '<span style="display:inline-block;margin-left:0.4rem;font-size:0.6rem;background:rgba(212,160,23,0.2);border:1px solid rgba(212,160,23,0.5);color:var(--gold-light);padding:0.1rem 0.4rem;border-radius:8px;vertical-align:middle;font-weight:700;letter-spacing:0.05em;">✈️ DDW 2027</span>' : ''}
+      </div>
+      <div class="lsv-pts">${s.pts} pts</div>
+    </div>`).join('');
+}
+
+// Limpiar todos los listeners de Firebase al cerrar/recargar la página
+// Reduce conexiones huérfanas en Firebase con 250 usuarios
+window.addEventListener('beforeunload', () => {
+  if (myScoreRef)       myScoreRef.off();
+  if (gameRef)          gameRef.off();
+  if (responseCountRef) responseCountRef.off();
+  if (scoresRef && scoresListenerActive) { scoresRef.off(); scoresListenerActive = false; }
+  stopPtsCountdown();
+  stopPlayerClientTimer();
+  if (mcPtsCountdownInterval) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
+  clearTimer();
+});
+
+// Reconexión automática cuando el jugador vuelve de background / llamada
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (state.role !== 'player' || !state.playerName) return;
+  // Re-establecer presencia en Firebase
+  if (myPlayerRef) {
+    myPlayerRef.update({ connected: true });
+    myPlayerRef.child('connected').onDisconnect().set(false);
+  }
+  // Actualizar dot de conexión en header
+  const dot = document.getElementById('player-conn-dot');
+  if (dot) { dot.style.background = '#2ECC71'; }
+  const txt = document.getElementById('player-conn-text');
+  if (txt) txt.textContent = 'conectado';
+});
+
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(window.location.search);
+
+  // FORCED_ROLE sobreescribe URL params — lo usan pantalla/, productor/, jugador/
+  const _role   = FORCED_ROLE || params.get('role');
+  const _view   = params.get('view');
+  const _module = (FORCED_ROLE === 'jugador') ? '2' : params.get('module');
+
+  // Modo marcador en vivo: ?view=scores
+  if (_view === 'scores') {
+    initLiveScoresView();
+    return;
+  }
+
+  document.getElementById('overlay-name').classList.remove('show');
+  autoConnectFirebase();
+
+  // ── Modo Productor ────────────────────────────────────────────────────
+  if (_role === 'productor') {
+    goProductor();
+    return;
+  }
+
+  // ── Modo Ponente (proyector reactivo) ─────────────────────────────────
+  if (_role === 'ponente') {
+    state.role     = 'ponente';
+    state.isPonente = true;
+    state.moduleIdx = 2;
+    document.body.classList.add('ponente-mode');
+    if (db) {
+      db.ref('answered').once('value', snap => {
+        const val = snap.val() || {};
+        Object.keys(val).forEach(k => state.usedCells.add(k.replace('_', '-')));
+        renderBoard();
+        showScreen('board');
+        startPonentListening();
+      });
+    } else {
+      renderBoard();
+      showScreen('board');
+      startPonentListening();
+    }
+    return;
+  }
+
+  // ── Modo Jugador ──────────────────────────────────────────────────────
+  if (_module === '0' || _module === '1' || _module === '2') {
+    const idx = parseInt(_module);
+    state.moduleIdx = idx;
+    document.querySelectorAll('.mod-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+    showScreen('player');
+
+    // ── Auto-reconexión: si hay sesión guardada para este módulo ──
+    try {
+      const savedName   = localStorage.getItem('gastro_name');
+      const savedModule = localStorage.getItem('gastro_module');
+      if (savedName && savedModule === String(idx)) {
+        activatePlayer(savedName, idx);
+        return;
+      }
+    } catch(_) {}
+
+    // Primera vez o módulo distinto → pedir nombre
+    goPlayer();
+  }
+  // Si no hay _role ni _module → landing (panel del operador/MC)
+});
+</script>
+
+<!-- ═══════════════════════════════════
+     LIVE SCORES VIEW (?view=scores)
+═══════════════════════════════════ -->
+<!-- ═══════════════════════════════════
+     PRODUCTOR PANEL (?role=productor)
+═══════════════════════════════════ -->
+<div id="screen-productor" class="screen">
+  <!-- Header -->
+  <div class="prod-header">
+    <div>
+      <div class="prod-title">🎛️ JeoparSII!</div>
+      <div class="prod-subtitle">Panel del Productor</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:0.6rem;color:var(--dim);letter-spacing:0.06em;">SII — Roma V</div>
+      <div style="font-size:0.57rem;color:rgba(245,200,66,0.55);margin-top:2px;">Summit Gastro · Cancún</div>
+    </div>
+  </div>
+  <!-- Stats bar -->
+  <div class="prod-stats-bar">
+    <span>🟢 <span id="prod-connected">0</span> conectados</span>
+    <span class="prod-sep">|</span>
+    <span>✅ <span id="prod-answered">0</span> respondidas</span>
+    <button class="prod-reset-btn" onclick="prodResetBoard()">🔄 Reset</button>
+  </div>
+  <!-- Estado actual -->
+  <div class="prod-state-box">
+    <div class="prod-state-tag">Estado actual</div>
+    <div class="prod-state-name" id="prod-state-name">Tablero — elige una pregunta</div>
+  </div>
+  <!-- Mini tablero (visible en estado 'board') -->
+  <div id="prod-board-wrap">
+    <div class="prod-board-grid" id="prod-board-grid"></div>
+  </div>
+  <!-- Detalle de pregunta (visible cuando hay pregunta activa) -->
+  <div id="prod-question-wrap" style="display:none;">
+    <div id="prod-question-content"></div>
+    <div id="prod-timer-display" style="display:none;">15</div>
+  </div>
+  <!-- Espaciador para el dock fijo -->
+  <div style="height:140px;flex-shrink:0;"></div>
+  <!-- Dock fijo -->
+  <div class="prod-dock">
+    <button id="prod-back-btn" class="prod-btn-back" style="display:none;" onclick="prodBackToBoard()">← Forzar vuelta al tablero</button>
+    <button id="prod-dock-btn" class="prod-btn-primary" style="display:none;" onclick=""></button>
+  </div>
+</div>
+
+<div id="live-scores-view">
+  <div class="lsv-header">
+    <div class="lsv-title">🏆 JeoparSII!</div>
+    <div style="text-align:right;">
+      <div class="lsv-live-badge">
+        <div class="lsv-dot"></div> EN VIVO
+      </div>
+      <div style="font-size:0.65rem;color:var(--dim);margin-top:0.2rem;letter-spacing:0.08em;">Summit Gastro 26 · Cancún</div>
+    </div>
+  </div>
+  <div class="lsv-body">
+    <div class="lsv-count" id="lsv-count"></div>
+    <div class="lsv-table" id="lsv-table">
+      <div class="lsv-empty">⏳ Esperando puntuaciones…</div>
+    </div>
+  </div>
+  <div class="lsv-footer">Marcador en tiempo real · jeopardycarnot · Firebase</div>
+</div>
+
+</body>
+</html>
