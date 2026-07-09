@@ -1196,11 +1196,16 @@ async function prepararPantalla() {
 
   await Promise.all(promises);
 
-  // Hace un silent play/pause en loop para confirmar que el browser lo desbloqueó
+  // Hace un silent play/pause para confirmar que el browser desbloqueó la reproducción
   for (const v of videos) {
     if (!v) continue;
+    const originalMuted = v.muted; // guarda estado original
     try { v.muted = true; await v.play(); v.pause(); v.currentTime = 0; } catch(_) {}
+    v.muted = originalMuted; // RESTAURA — cortinilla debe quedar con audio
   }
+  // Asegurar explícitamente que la cortinilla no quede silenciada
+  const cortinilla = document.getElementById('ov-video-player');
+  if (cortinilla) cortinilla.muted = false;
 
   if (btn) {
     btn.textContent = '✓ Todo listo';
