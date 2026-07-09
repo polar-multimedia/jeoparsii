@@ -743,8 +743,8 @@ body.ponente-mode .board-header .btn-q-secondary { pointer-events: none; opacity
 .prod-btn-aux:active { background: var(--navy-light); }
 
 /* ── PANTALLA: Overlays fijos (controlados por Productor vía Firebase) ── */
-.pantalla-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 900; align-items: center; justify-content: center; flex-direction: column; }
-.pantalla-overlay.ov-active { display: flex; }
+.pantalla-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 900; display: flex; align-items: center; justify-content: center; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.85s ease; }
+.pantalla-overlay.ov-active { opacity: 1; pointer-events: all; }
 #ov-qr { background: rgba(10,22,40,0.97); gap: 1.5rem; }
 .ov-qr-eyebrow { font-size: clamp(0.75rem,2vw,1rem); color: var(--gold); letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
 .ov-qr-title { font-size: clamp(2rem,5vw,3.5rem); font-weight: 900; color: var(--white); text-align: center; }
@@ -1063,6 +1063,66 @@ if (FORCED_ROLE === 'productor') {
     const s = document.getElementById('screen-productor');
     if (s) s.classList.add('active');
   });
+}
+
+// Pantalla de espera con luces orgánicas (solo para el ponente/proyector)
+if (FORCED_ROLE === 'ponente') {
+  document.addEventListener('DOMContentLoaded', () => {
+    const ov = document.getElementById('ov-waiting');
+    if (ov) ov.classList.add('ov-active');
+    requestAnimationFrame(initOrganicLights);
+  });
+}
+
+function initOrganicLights() {
+  const canvas = document.getElementById('lights-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let rafId;
+
+  function resize() {
+    canvas.width  = canvas.offsetWidth  || window.innerWidth;
+    canvas.height = canvas.offsetHeight || window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Luces: cada una tiene posición base, color, fase y velocidad distintas
+  const lights = [
+    { cx:0.22, cy:0.32, r:0.38, rgb:[212,160,23],  ph:0,    sp:0.00026, ax:0.19, ay:0.14 },
+    { cx:0.70, cy:0.60, r:0.45, rgb:[30, 70, 200], ph:2.1,  sp:0.00018, ax:0.14, ay:0.20 },
+    { cx:0.50, cy:0.15, r:0.28, rgb:[245,200,66],  ph:1.4,  sp:0.00022, ax:0.21, ay:0.11 },
+    { cx:0.82, cy:0.78, r:0.33, rgb:[15, 90, 170], ph:3.8,  sp:0.00030, ax:0.12, ay:0.17 },
+    { cx:0.14, cy:0.72, r:0.26, rgb:[180,110,15],  ph:4.6,  sp:0.00025, ax:0.16, ay:0.13 },
+    { cx:0.60, cy:0.88, r:0.24, rgb:[212,160,23],  ph:5.3,  sp:0.00020, ax:0.18, ay:0.10 },
+    { cx:0.35, cy:0.55, r:0.20, rgb:[80, 120,255], ph:0.8,  sp:0.00033, ax:0.10, ay:0.22 },
+  ];
+
+  let t = 0;
+  function frame() {
+    const w = canvas.width, h = canvas.height;
+    ctx.fillStyle = '#060E1C';
+    ctx.fillRect(0, 0, w, h);
+    lights.forEach(l => {
+      const x = (l.cx + Math.sin(t * l.sp + l.ph) * l.ax) * w;
+      const y = (l.cy + Math.cos(t * l.sp * 1.31 + l.ph + 1.1) * l.ay) * h;
+      const r = l.r * Math.min(w, h);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      const [R,G,B] = l.rgb;
+      g.addColorStop(0,    `rgba(${R},${G},${B},0.24)`);
+      g.addColorStop(0.3,  `rgba(${R},${G},${B},0.12)`);
+      g.addColorStop(0.65, `rgba(${R},${G},${B},0.05)`);
+      g.addColorStop(1,    `rgba(${R},${G},${B},0)`);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, w, h);
+    });
+    t++;
+    rafId = requestAnimationFrame(frame);
+  }
+
+  frame();
+  // Exponer función para detener la animación si se cierra el overlay
+  window._stopOrganicLights = () => cancelAnimationFrame(rafId);
 }
 
 // ════════════════════════════════════════════
@@ -2094,10 +2154,20 @@ function esc(str) {
 // PONENTE MODE — tablero reactivo (proyector)
 // El Productor manda; el Ponente solo escucha y muestra
 // ════════════════════════════════════════════
+function dismissWaitingScreen() {
+  const ov = document.getElementById('ov-waiting');
+  if (ov && ov.classList.contains('ov-active')) {
+    ov.classList.remove('ov-active');
+    if (typeof window._stopOrganicLights === 'function') window._stopOrganicLights();
+  }
+}
+
 function startPonentListening() {
   fbListenGame(data => {
     if (!data || !data.type) return;
     const t = data.type;
+    // Al primer evento del productor, cierra la pantalla de espera con transición suave
+    dismissWaitingScreen();
     // ── Pregunta solo texto ──
     if (t === 'question_text') {
       if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
@@ -2142,6 +2212,7 @@ function startPonentListening() {
 }
 
 function pantallaSetOverlay(name) {
+  dismissWaitingScreen();
   ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking','ov-video'].forEach(id => {
     document.getElementById(id)?.classList.remove('ov-active');
   });
@@ -2378,7 +2449,7 @@ function prodSetOverlay(name) {
 
 function prodToggleQR()       { prodSetOverlay(prodActiveOverlay === 'qr'       ? null : 'qr'); }
 function prodToggleLogo()     { prodSetOverlay(prodActiveOverlay === 'logo'      ? null : 'logo'); }
-function prodToggleBlackout() { prodSetOverlay(prodActiveOverlay === 'blackout'  ? null : 'blackout'); }
+function prodToggleBlackout() { prodSetOverlay(prodActiveOverlay === 'logo' ? null : 'logo'); }
 function prodToggleCortinilla() {
   if (prodActiveOverlay === 'video') { prodSetOverlay(null); return; }
   prodSetOverlay(null); // apaga cualquier overlay activo
@@ -2873,10 +2944,10 @@ window.addEventListener('load', () => {
           <span class="btn-label">Cortinilla / Bienvenida</span>
           <span class="btn-badge" id="badge-video">apagado</span>
         </button>
-        <button class="prod-lobby-btn" id="btn-ov-black" onclick="prodToggleBlackout()">
-          <span class="btn-icon">⬛</span>
-          <span class="btn-label">Pantalla en negro</span>
-          <span class="btn-badge" id="badge-black">apagado</span>
+        <button class="prod-lobby-btn" id="btn-ov-logo" onclick="prodToggleBlackout()">
+          <span class="btn-icon">🌀</span>
+          <span class="btn-label">Logo en pantalla</span>
+          <span class="btn-badge" id="badge-logo">apagado</span>
         </button>
       </div>
     </div>
@@ -2894,7 +2965,7 @@ window.addEventListener('load', () => {
       <button class="prod-lobby-btn" style="width:auto;padding:0.35rem 0.8rem;font-size:0.72rem;" onclick="prodGoLobby()">← Sala de control</button>
       <div style="display:flex;gap:0.4rem;">
         <button class="prod-btn-aux" onclick="prodToggleQR()" id="board-btn-qr">📱 QR</button>
-        <button class="prod-btn-aux" onclick="prodToggleBlackout()" id="board-btn-black">⬛</button>
+        <button class="prod-btn-aux" onclick="prodToggleBlackout()" id="board-btn-black">🌀</button>
       </div>
     </div>
     <div class="prod-board-grid" id="prod-board-grid"></div>
@@ -2920,6 +2991,18 @@ window.addEventListener('load', () => {
 <!-- ═══════════════════════════════════
      OVERLAYS DE PANTALLA (Productor controla, Pantalla muestra)
 ═══════════════════════════════════ -->
+<!-- Pantalla de espera — "En unos momentos comenzamos" (ponente only) -->
+<div id="ov-waiting" class="pantalla-overlay" style="background:#060E1C;overflow:hidden;">
+  <canvas id="lights-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem;">
+    <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!"
+         style="max-width:420px;width:52vw;margin-bottom:2rem;filter:drop-shadow(0 0 50px rgba(212,160,23,0.45));">
+    <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos"
+         style="max-width:260px;width:30vw;margin-bottom:3.5rem;opacity:0.88;filter:drop-shadow(0 0 20px rgba(0,0,0,0.5));">
+    <div style="font-size:clamp(1rem,2.8vw,2.4rem);color:rgba(255,255,255,0.92);font-weight:300;letter-spacing:0.22em;text-transform:uppercase;text-shadow:0 0 80px rgba(212,160,23,0.5);">En unos momentos comenzamos</div>
+    <div style="width:100px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,23,0.7),transparent);margin:1.8rem auto 0;"></div>
+  </div>
+</div>
 <!-- Cortinilla de entrada -->
 <div id="ov-video" class="pantalla-overlay">
   <video id="ov-video-player" playsinline preload="auto">
