@@ -208,7 +208,7 @@ body {
 .board-header h1 { font-size: clamp(1rem, 3vw, 1.4rem); color: var(--gold-light); letter-spacing: 0.15em; font-weight: 900; text-transform: uppercase; }
 .board-grid {
   display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 6px; padding: 8px; flex: 1;
+  gap: 6px; padding: 8px 18px 18px; flex: 1;
 }
 /* Category headers — big & bold */
 .cat-header {
@@ -945,25 +945,24 @@ body.ponente-text-only .q-actions { display: none !important; }
 ═══════════════════════════════════ -->
 <div id="screen-board" class="screen">
   <div class="board-header">
-    <div>
-      <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!" style="max-height:2.4rem;display:block;margin-bottom:0.15rem;">
-      <div style="font-size:0.7rem;color:var(--dim);" id="board-module-label"></div>
+    <div style="display:flex;align-items:center;gap:0.75rem;min-width:0;">
+      <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsi-letras.png" alt="JeoparSII!" style="max-height:2.4rem;display:block;flex-shrink:0;">
+      <span style="font-size:clamp(0.75rem,1.8vw,1rem);font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap;">Sii, Roma V</span>
     </div>
-    <div style="display:flex;gap:0.45rem;align-items:center;">
+    <div style="display:flex;gap:0.75rem;align-items:center;flex-shrink:0;">
+      <div class="board-stat">
+        <span class="board-stat-dot" style="background:#2ECC71;box-shadow:0 0 6px #2ECC71;"></span>
+        <span class="board-stat-num" id="board-connected-count">0</span>
+        <span class="board-stat-lbl">conectados</span>
+      </div>
+      <div class="board-stat-sep"></div>
+      <div class="board-stat">
+        <span class="board-stat-dot" style="background:var(--gold);box-shadow:0 0 6px rgba(212,160,23,0.8);"></span>
+        <span class="board-stat-num" id="board-answered-count">0</span>
+        <span class="board-stat-lbl">contestadas</span>
+      </div>
+      <div class="board-stat-sep"></div>
       <button class="btn-q-tertiary" style="font-size:0.8rem;" onclick="showScreen('landing')">← Salir</button>
-    </div>
-  </div>
-  <div class="board-stats-bar">
-    <div class="board-stat">
-      <span class="board-stat-dot" style="background:#2ECC71;box-shadow:0 0 6px #2ECC71;"></span>
-      <span class="board-stat-num" id="board-connected-count">0</span>
-      <span class="board-stat-lbl">conectados</span>
-    </div>
-    <div class="board-stat-sep"></div>
-    <div class="board-stat">
-      <span class="board-stat-dot" style="background:var(--gold);box-shadow:0 0 6px rgba(212,160,23,0.8);"></span>
-      <span class="board-stat-num" id="board-answered-count">0</span>
-      <span class="board-stat-lbl">contestadas</span>
     </div>
   </div>
   <div class="board-grid" id="board-grid"></div>
@@ -3260,7 +3259,7 @@ window.addEventListener('load', () => {
 </div>
 <!-- QR -->
 <div id="ov-qr" class="pantalla-overlay">
-  <img class="ov-qr-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!">
+  <img class="ov-qr-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
   <div class="ov-qr-box" id="ov-qr-canvas"></div>
   <div class="ov-qr-scan">Escanea con tu celular</div>
 </div>
