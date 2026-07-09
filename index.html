@@ -781,6 +781,8 @@ body.ponente-text-only .q-opts-wrap { visibility: hidden !important; }
 body.ponente-text-only #btn-start-wrap,
 body.ponente-text-only #btn-reveal,
 body.ponente-text-only .q-actions { display: none !important; }
+#ov-video { background: #000; }
+#ov-video-player { width: 100%; height: 100%; object-fit: contain; display: block; }
 </style>
 </head>
 <body>
@@ -2118,6 +2120,8 @@ function startPonentListening() {
       renderBoard();
       showScreen('board');
     // ── Overlays ──
+    } else if (t === 'overlay_video') {
+      pantallaSetOverlay('video');
     } else if (t === 'overlay_qr') {
       pantallaSetOverlay('qr');
     } else if (t === 'overlay_logo') {
@@ -2136,10 +2140,27 @@ function startPonentListening() {
 }
 
 function pantallaSetOverlay(name) {
-  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking'].forEach(id => {
+  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking','ov-video'].forEach(id => {
     document.getElementById(id)?.classList.remove('ov-active');
   });
+  // Parar video si se apaga
+  const vp = document.getElementById('ov-video-player');
+  if (vp) { vp.pause(); vp.currentTime = 0; }
   if (!name) return;
+  // Video: reproducir con audio
+  if (name === 'video') {
+    const ov = document.getElementById('ov-video');
+    if (ov) ov.classList.add('ov-active');
+    if (vp) {
+      vp.currentTime = 0;
+      vp.play().catch(() => {});
+      vp.onended = () => {
+        ov?.classList.remove('ov-active');
+        fbBroadcast && fbBroadcast({ type: 'clear_overlay' });
+      };
+    }
+    return;
+  }
   // Generar QR si es necesario
   if (name === 'qr' && !document._qrGenerated) {
     const canvas = document.getElementById('ov-qr-canvas');
@@ -2297,12 +2318,15 @@ function prodGoBoard() {
 // ── Overlays de pantalla ────────────────────────────────────────────
 function prodSetOverlay(name) {
   // Apaga todos los overlays
-  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking'].forEach(id => {
+  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking','ov-video'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('ov-active');
   });
+  // Parar video si estaba corriendo
+  const vp = document.getElementById('ov-video-player');
+  if (vp) { vp.pause(); vp.currentTime = 0; }
   // Resetea badges en lobby
-  ['qr','logo','black'].forEach(k => {
+  ['qr','logo','black','video'].forEach(k => {
     const badge = document.getElementById('badge-' + k);
     const btn   = document.getElementById('btn-ov-' + k);
     if (badge) badge.textContent = 'apagado';
@@ -2340,6 +2364,16 @@ function prodSetOverlay(name) {
 function prodToggleQR()       { prodSetOverlay(prodActiveOverlay === 'qr'       ? null : 'qr'); }
 function prodToggleLogo()     { prodSetOverlay(prodActiveOverlay === 'logo'      ? null : 'logo'); }
 function prodToggleBlackout() { prodSetOverlay(prodActiveOverlay === 'blackout'  ? null : 'blackout'); }
+function prodToggleCortinilla() {
+  if (prodActiveOverlay === 'video') { prodSetOverlay(null); return; }
+  prodSetOverlay(null); // apaga cualquier overlay activo
+  prodActiveOverlay = 'video';
+  fbBroadcast({ type: 'overlay_video' });
+  const badge = document.getElementById('badge-video');
+  const btn   = document.getElementById('btn-ov-video');
+  if (badge) badge.textContent = 'activo';
+  if (btn)   btn.classList.add('ov-active');
+}
 
 function prodShowStats() {
   const cat = MODULES[2].categories[PROD.currentCat];
@@ -2829,6 +2863,11 @@ window.addEventListener('load', () => {
           <span class="btn-label">Pantalla en negro</span>
           <span class="btn-badge" id="badge-black">apagado</span>
         </button>
+        <button class="prod-lobby-btn" id="btn-ov-video" onclick="prodToggleCortinilla()">
+          <span class="btn-icon">🎬</span>
+          <span class="btn-label">Cortinilla de entrada</span>
+          <span class="btn-badge" id="badge-video">apagado</span>
+        </button>
       </div>
     </div>
     <!-- Iniciar juego -->
@@ -2871,6 +2910,12 @@ window.addEventListener('load', () => {
 <!-- ═══════════════════════════════════
      OVERLAYS DE PANTALLA (Productor controla, Pantalla muestra)
 ═══════════════════════════════════ -->
+<!-- Cortinilla de entrada -->
+<div id="ov-video" class="pantalla-overlay">
+  <video id="ov-video-player" playsinline preload="auto">
+    <source src="https://polar-multimedia.github.io/jeoparsii/cortinilla-de-entrada.mp4" type="video/mp4">
+  </video>
+</div>
 <!-- QR -->
 <div id="ov-qr" class="pantalla-overlay">
   <div class="ov-qr-eyebrow">📱 Únete al juego</div>
