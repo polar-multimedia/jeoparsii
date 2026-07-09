@@ -1203,13 +1203,13 @@ async function prepararPantalla() {
   }
 
   if (btn) {
-    btn.textContent = '✓ Listo';
+    btn.textContent = '✓ Todo listo';
     btn.style.borderColor = 'rgba(30,180,80,0.6)';
     btn.style.color = 'rgba(80,220,120,0.9)';
   }
   if (status) {
-    status.textContent = 'Videos precargados — pantalla lista';
-    status.style.color = 'rgba(212,160,23,0.7)';
+    status.textContent = 'Videos precargados — esperando al operador';
+    status.style.color = 'rgba(212,160,23,0.65)';
   }
 }
 
@@ -2260,11 +2260,18 @@ function dismissWaitingScreen() {
 }
 
 function startPonentListening() {
+  // Eventos que indican que el operador está activamente mostrando contenido
+  const ACTIVE_EVENTS = new Set([
+    'question_text','question_options','question','timer_start','reveal',
+    'overlay_video','overlay_qr','overlay_logo','overlay_blackout','overlay_stats','overlay_ranking'
+  ]);
+
   fbListenGame(data => {
     if (!data || !data.type) return;
     const t = data.type;
-    // Al primer evento del productor, cierra la pantalla de espera con transición suave
-    dismissWaitingScreen();
+    // Solo descarta la pantalla de espera cuando el operador activamente inicia algo
+    // idle y clear_overlay NO la descartan — la pantalla de espera se queda hasta que el operador actúe
+    if (ACTIVE_EVENTS.has(t)) dismissWaitingScreen();
     // ── Pregunta solo texto ──
     if (t === 'question_text') {
       if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
@@ -2309,7 +2316,6 @@ function startPonentListening() {
 }
 
 function pantallaSetOverlay(name) {
-  dismissWaitingScreen();
   ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking','ov-video'].forEach(id => {
     document.getElementById(id)?.classList.remove('ov-active');
   });
