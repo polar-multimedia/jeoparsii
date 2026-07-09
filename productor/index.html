@@ -564,6 +564,51 @@ body.ponente-mode .q-actions { display: none !important; }
 body.ponente-mode .board-header .btn-q-tertiary,
 body.ponente-mode .board-header .btn-q-secondary { pointer-events: none; opacity: 0.4; }
 
+/* ── Pantalla de pregunta en pantalla grande (ponente) ── */
+body.ponente-mode #screen-question {
+  background: radial-gradient(ellipse 80% 70% at 50% 50%, #0d1e3e 0%, #040c18 100%) !important;
+}
+body.ponente-mode .q-box {
+  max-width: min(84vw, 1100px) !important;
+  padding: clamp(1.8rem,4vw,3.5rem) clamp(2rem,5vw,4rem) !important;
+}
+body.ponente-mode .q-text {
+  font-size: clamp(1.35rem,2.9vw,2.5rem) !important;
+  line-height: 1.55 !important;
+  margin-bottom: 2rem !important;
+}
+body.ponente-mode .opt-btn {
+  font-size: clamp(0.95rem,1.9vw,1.5rem) !important;
+  padding: clamp(0.75rem,1.5vw,1.2rem) clamp(0.9rem,2vw,1.6rem) !important;
+}
+body.ponente-mode .q-cat    { font-size: clamp(0.75rem,1.4vw,1.05rem) !important; }
+body.ponente-mode .q-pts-badge { font-size: clamp(0.95rem,1.9vw,1.45rem) !important; }
+body.ponente-mode .timer-display { font-size: clamp(2.2rem,6.5vw,5rem) !important; }
+
+/* ── Animación de entrada dramática ── */
+@keyframes qZoomPonente {
+  0%   { opacity:0; transform:scale(0.05) rotate(-3deg); filter:blur(24px); }
+  45%  { filter:blur(0); }
+  100% { opacity:1; transform:scale(1) rotate(0deg); filter:none; }
+}
+@keyframes qSlideUp {
+  from { opacity:0; transform:translateY(45px); }
+  to   { opacity:1; transform:none; }
+}
+body.ponente-mode .q-box.q-anim-enter {
+  animation: qZoomPonente 0.72s cubic-bezier(0.16,1,0.3,1) both !important;
+}
+body.ponente-mode .q-box.q-anim-enter .q-meta {
+  animation: qSlideUp 0.45s 0.32s ease both !important;
+}
+body.ponente-mode .q-box.q-anim-enter .q-text {
+  animation: qSlideUp 0.55s 0.52s ease both !important;
+}
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(1) { animation:qSlideUp 0.4s 0.70s ease both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(2) { animation:qSlideUp 0.4s 0.86s ease both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(3) { animation:qSlideUp 0.4s 1.02s ease both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animation:qSlideUp 0.4s 1.18s ease both !important; }
+
 /* ══════════════════════════════════════════════
    PRODUCTOR PANEL
 ══════════════════════════════════════════════ */
@@ -1125,6 +1170,49 @@ function initOrganicLights() {
   window._stopOrganicLights = () => cancelAnimationFrame(rafId);
 }
 
+// Precarga todos los videos para evitar delays durante el evento
+async function prepararPantalla() {
+  const btn    = document.getElementById('btn-preparar');
+  const status = document.getElementById('preparar-status');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando…'; }
+
+  const videos = [
+    document.getElementById('ov-loop-player'),
+    document.getElementById('ov-video-player'),
+  ];
+
+  const promises = videos.map(v => {
+    if (!v) return Promise.resolve();
+    v.preload = 'auto';
+    v.load();
+    return new Promise(res => {
+      if (v.readyState >= 4) { res(); return; }
+      const done = () => { v.removeEventListener('canplaythrough', done); res(); };
+      v.addEventListener('canplaythrough', done);
+      // Timeout de seguridad — 8 segundos
+      setTimeout(res, 8000);
+    });
+  });
+
+  await Promise.all(promises);
+
+  // Hace un silent play/pause en loop para confirmar que el browser lo desbloqueó
+  for (const v of videos) {
+    if (!v) continue;
+    try { v.muted = true; await v.play(); v.pause(); v.currentTime = 0; } catch(_) {}
+  }
+
+  if (btn) {
+    btn.textContent = '✓ Listo';
+    btn.style.borderColor = 'rgba(30,180,80,0.6)';
+    btn.style.color = 'rgba(80,220,120,0.9)';
+  }
+  if (status) {
+    status.textContent = 'Videos precargados — pantalla lista';
+    status.style.color = 'rgba(212,160,23,0.7)';
+  }
+}
+
 // ════════════════════════════════════════════
 // GAME DATA
 // ════════════════════════════════════════════
@@ -1603,6 +1691,15 @@ function openQuestion(catIdx, qIdx) {
     if (qa) qa.style.display = 'none';
   }
   showScreen('question');
+  // Animación dramática de entrada para el ponente (pantalla grande)
+  if (state.isPonente) {
+    const qBox = document.querySelector('#screen-question .q-box');
+    if (qBox) {
+      qBox.classList.remove('q-anim-enter');
+      void qBox.offsetWidth; // fuerza reflow para re-disparar la animación
+      qBox.classList.add('q-anim-enter');
+    }
+  }
 }
 function reviewQuestion(catIdx, qIdx) {
   // Read-only review: show question with correct answer revealed, no broadcast, no timer
@@ -2991,16 +3088,17 @@ window.addEventListener('load', () => {
 <!-- ═══════════════════════════════════
      OVERLAYS DE PANTALLA (Productor controla, Pantalla muestra)
 ═══════════════════════════════════ -->
-<!-- Pantalla de espera — "En unos momentos comenzamos" (ponente only) -->
+<!-- Pantalla de espera — "En unos momentos iniciamos" (ponente only) -->
 <div id="ov-waiting" class="pantalla-overlay" style="background:#060E1C;overflow:hidden;">
   <canvas id="lights-canvas" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
-  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem;">
-    <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!"
-         style="max-width:420px;width:52vw;margin-bottom:2rem;filter:drop-shadow(0 0 50px rgba(212,160,23,0.45));">
-    <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos"
-         style="max-width:260px;width:30vw;margin-bottom:3.5rem;opacity:0.88;filter:drop-shadow(0 0 20px rgba(0,0,0,0.5));">
-    <div style="font-size:clamp(1rem,2.8vw,2.4rem);color:rgba(255,255,255,0.92);font-weight:300;letter-spacing:0.22em;text-transform:uppercase;text-shadow:0 0 80px rgba(212,160,23,0.5);">En unos momentos comenzamos</div>
-    <div style="width:100px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,23,0.7),transparent);margin:1.8rem auto 0;"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;text-align:center;padding:2rem;gap:0;">
+    <div style="font-size:clamp(1.1rem,3vw,2.6rem);color:rgba(255,255,255,0.88);font-weight:300;letter-spacing:0.24em;text-transform:uppercase;text-shadow:0 0 100px rgba(212,160,23,0.55);">En unos momentos iniciamos</div>
+    <div style="width:90px;height:1px;background:linear-gradient(90deg,transparent,rgba(212,160,23,0.65),transparent);margin:1.6rem auto 2.2rem;"></div>
+    <!-- Botón Preparar pantalla — precarga todos los videos -->
+    <button id="btn-preparar" onclick="prepararPantalla()" style="background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.45);color:rgba(255,255,255,0.75);font-family:inherit;font-size:clamp(0.65rem,1.2vw,0.85rem);font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:0.55rem 1.4rem;border-radius:30px;cursor:pointer;transition:background 0.3s,border-color 0.3s,color 0.3s;">
+      ▶ Preparar pantalla
+    </button>
+    <div id="preparar-status" style="font-size:clamp(0.5rem,0.9vw,0.65rem);color:rgba(212,160,23,0);letter-spacing:0.1em;margin-top:0.55rem;transition:color 0.5s;"></div>
   </div>
 </div>
 <!-- Cortinilla de entrada -->
