@@ -392,7 +392,7 @@ body.ponente-mode .board-stats-bar { padding: 0.7rem 1.5rem; gap: 2.5rem; }
   background: var(--navy-mid);
   height: 100dvh; height: 100vh;   /* fallback */
   overflow: hidden;
-  display: flex; flex-direction: column;
+  /* display y flex-direction los maneja .screen.active */
 }
 .player-top {
   position: sticky; top: 0; z-index: 50;
@@ -663,7 +663,7 @@ body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animati
 ══════════════════════════════════════════════ */
 #screen-productor {
   background: var(--navy);
-  display: flex;
+  /* display y flex-direction los maneja .screen.active + CSS injection de productor/index.html */
   flex-direction: column;
 }
 .prod-header {
@@ -1643,6 +1643,8 @@ function renderBoard() {
       const colClass = ['col-a','col-b','col-c','col-d','col-e'][ci];
       const isUsed = state.usedCells.has(key);
       cell.className = 'cell ' + colClass + (isUsed ? ' used' : '');
+      cell.dataset.ci = ci;
+      cell.dataset.qi = qi;
       if (isUsed) {
         cell.innerHTML = `
           <span class="pts">${q.pts}</span>
@@ -2080,6 +2082,12 @@ function handleGameEvent(data) {
     // Reset timer bar to full without counting down
     const b = document.getElementById('player-timer-bar');
     if (b) { b.style.width = '100%'; b.style.background = 'var(--gold)'; }
+    // Si el evento incluye opciones (question_options / question), mostrarlas visible
+    // pero no interactivas todavía (pointer-events: none se activa en timer_start)
+    if (data.type !== 'question_text') {
+      const _wrap = document.getElementById('player-opts-wrap');
+      if (_wrap) _wrap.style.opacity = '1';
+    }
   } else if (data.type === 'timer_start') {
     // MC pressed "Iniciar Cronómetro" — reveal options y empezar a medir velocidad
     // Si el jugador no recibió question_options antes (Firebase sobrescribió), renderizar ahora
@@ -2313,7 +2321,8 @@ function startPonentListening() {
   // Eventos que indican que el operador está activamente mostrando contenido
   const ACTIVE_EVENTS = new Set([
     'question_text','question_options','question','timer_start','reveal',
-    'overlay_video','overlay_qr','overlay_logo','overlay_blackout','overlay_stats','overlay_ranking'
+    'overlay_video','overlay_qr','overlay_logo','overlay_blackout','overlay_stats','overlay_ranking',
+    'cell_selecting'
   ]);
 
   fbListenGame(data => {
@@ -2322,8 +2331,15 @@ function startPonentListening() {
     // Solo descarta la pantalla de espera cuando el operador activamente inicia algo
     // idle y clear_overlay NO la descartan — la pantalla de espera se queda hasta que el operador actúe
     if (ACTIVE_EVENTS.has(t)) dismissWaitingScreen();
+    // ── Casilla parpadeando (2s antes de mostrar pregunta) ──
+    if (t === 'cell_selecting') {
+      const _bCell = document.querySelector(`.cell[data-ci="${data.catIdx}"][data-qi="${data.qIdx}"]`);
+      if (_bCell && !_bCell.classList.contains('used')) {
+        _bCell.classList.add('cell-selecting');
+        setTimeout(() => _bCell.classList.remove('cell-selecting'), 2100);
+      }
     // ── Pregunta solo texto ──
-    if (t === 'question_text') {
+    } else if (t === 'question_text') {
       if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
       document.body.classList.add('ponente-text-only');
       openQuestion(data.catIdx, data.qIdx);
@@ -2494,6 +2510,7 @@ let prodConnectedRef = null;
 let prodResponseRef  = null;
 let prodQrGenerated  = false;
 let prodActiveOverlay = null; // 'qr' | 'logo' | 'blackout' | 'stats' | 'ranking' | null
+let cellSelectingTimeout = null; // delay de 2s entre cell_selecting y question_text
 
 const PROD_STATE_NAMES = {
   lobby:       'Sala de Control',
@@ -2730,8 +2747,13 @@ function prodOpenQuestion(catIdx, qIdx) {
   prodSetOverlay(null);
   // Limpiar respuestas anteriores
   if (db) db.ref(`responses/${catIdx}_${qIdx}`).remove();
-  // Broadcast: pantalla muestra solo texto (jugadores NO ven aún)
-  fbBroadcast({ type: 'question_text', moduleIdx: 2, catIdx, qIdx });
+  // Broadcast: parpadeo de casilla en pantalla durante 2 segundos, luego pregunta
+  fbBroadcast({ type: 'cell_selecting', catIdx, qIdx });
+  if (cellSelectingTimeout) clearTimeout(cellSelectingTimeout);
+  cellSelectingTimeout = setTimeout(() => {
+    cellSelectingTimeout = null;
+    fbBroadcast({ type: 'question_text', moduleIdx: 2, catIdx, qIdx });
+  }, 2000);
   // Contenido en panel del Productor
   const letters = ['A','B','C','D'];
   const content = document.getElementById('prod-question-content');
@@ -2831,6 +2853,7 @@ function prodReveal() {
 // ── Volver al tablero ───────────────────────────────────────────────
 function prodBackToBoard() {
   if (PROD.timerInterval)  { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
+  if (cellSelectingTimeout) { clearTimeout(cellSelectingTimeout); cellSelectingTimeout = null; }
   if (prodResponseRef)     { prodResponseRef.off(); prodResponseRef = null; }
   PROD.gameState  = 'board';
   PROD.currentCat = -1;
