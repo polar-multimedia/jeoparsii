@@ -793,8 +793,9 @@ body.ponente-text-only .q-actions { display: none !important; }
 <div id="screen-landing" class="screen active">
   <div class="landing-top">
     <div class="logo-eyebrow">Carnot · Educación Médica Continua</div>
-    <div class="logo-title">JeoparSII!</div>
+    <img src="logo-jeoparsii.png" alt="JeoparSII!" class="logo-title-img" style="max-width:280px;width:75%;display:block;margin:0 auto 0.2rem;">
     <div class="logo-byline">SII — Roma V · Summit Gastro Cancún 2026</div>
+    <img src="logo-dr.png" alt="Dr. Valdovinos" style="max-width:180px;width:55%;display:block;margin:0.6rem auto;opacity:0.92;">
     <div class="logo-rule"></div>
     <div class="logo-sub">SII — Roma V &nbsp;·&nbsp; Línea Libertrim</div>
     <div class="module-selector">
@@ -852,7 +853,7 @@ body.ponente-text-only .q-actions { display: none !important; }
 <div id="screen-board" class="screen">
   <div class="board-header">
     <div>
-      <h1>JeoparSII!</h1>
+      <img src="logo-jeoparsii.png" alt="JeoparSII!" style="max-height:2.4rem;display:block;margin-bottom:0.15rem;">
       <div style="font-size:0.7rem;color:var(--dim);" id="board-module-label"></div>
     </div>
     <div style="display:flex;gap:0.45rem;align-items:center;flex-wrap:wrap;">
@@ -929,7 +930,7 @@ body.ponente-text-only .q-actions { display: none !important; }
   <div class="player-inner">
     <div id="player-content" style="width:100%;">
       <div class="player-waiting">
-        <div style="font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;letter-spacing:0.06em;line-height:1;margin-bottom:0.15rem;background:linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">JeoparSII!</div>
+        <img src="logo-jeoparsii.png" alt="JeoparSII!" style="max-width:200px;width:65%;display:block;margin:0 auto 0.15rem;">
         <div style="font-size:0.72rem;color:rgba(245,200,66,0.55);letter-spacing:0.1em;font-style:italic;margin-bottom:1.2rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
         <span class="dot"></span> Conectado — esperando pregunta…<br>
         <span style="font-size:0.82rem;">El Productor abrirá la siguiente pregunta</span><br><br>
@@ -992,7 +993,8 @@ body.ponente-text-only .q-actions { display: none !important; }
      OVERLAYS
 ═══════════════════════════════════ -->
 <div id="overlay-name" class="overlay" style="overflow-y:auto;">
-  <div style="font-size:clamp(1.8rem,7vw,2.8rem);font-weight:900;color:var(--gold-light);letter-spacing:0.06em;line-height:1;margin-bottom:0.15rem;background:linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">JeoparSII!</div>
+  <img src="logo-jeoparsii.png" alt="JeoparSII!" style="max-width:240px;width:70%;display:block;margin:0 auto 0.15rem;">
+  <img src="logo-dr.png" alt="Dr. Valdovinos" style="max-width:160px;width:50%;display:block;margin:0.4rem auto 0.1rem;opacity:0.9;">
   <div style="font-size:0.75rem;color:rgba(245,200,66,0.6);letter-spacing:0.12em;font-style:italic;margin-bottom:0.9rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
   <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 1rem;"></div>
 
@@ -2068,7 +2070,7 @@ function showPlayerReveal(correctAns) {
 function showPlayerIdle() {
   document.getElementById('player-content').innerHTML = `
     <div class="player-waiting">
-      <div style="font-size:clamp(1.6rem,6vw,2.4rem);font-weight:900;letter-spacing:0.06em;line-height:1;margin-bottom:0.15rem;background:linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">JeoparSII!</div>
+      <img src="logo-jeoparsii.png" alt="JeoparSII!" style="max-width:200px;width:65%;display:block;margin:0 auto 0.15rem;">
       <div style="font-size:0.72rem;color:rgba(245,200,66,0.55);letter-spacing:0.1em;font-style:italic;margin-bottom:1.2rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
       <span class="dot"></span> Conectado — esperando pregunta…<br>
       <span style="font-size:0.82rem;color:var(--dim);">El Productor abrirá la siguiente pregunta</span><br><br>
@@ -2143,11 +2145,20 @@ function pantallaSetOverlay(name) {
   ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking','ov-video'].forEach(id => {
     document.getElementById(id)?.classList.remove('ov-active');
   });
-  // Parar video si se apaga
+  // Parar videos al apagar overlays
   const vp = document.getElementById('ov-video-player');
   if (vp) { vp.pause(); vp.currentTime = 0; }
+  const lp = document.getElementById('ov-loop-player');
+  if (lp && name !== 'logo') { lp.pause(); }
   if (!name) return;
-  // Video: reproducir con audio
+  // Video de logo en loop (muted, se repite)
+  if (name === 'logo') {
+    const ov = document.getElementById('ov-logo');
+    if (ov) ov.classList.add('ov-active');
+    if (lp) { lp.currentTime = 0; lp.play().catch(() => {}); }
+    return;
+  }
+  // Cortinilla: reproducir con audio, se apaga al terminar
   if (name === 'video') {
     const ov = document.getElementById('ov-video');
     if (ov) ov.classList.add('ov-active');
@@ -2322,11 +2333,13 @@ function prodSetOverlay(name) {
     const el = document.getElementById(id);
     if (el) el.classList.remove('ov-active');
   });
-  // Parar video si estaba corriendo
+  // Parar videos si estaban corriendo
   const vp = document.getElementById('ov-video-player');
   if (vp) { vp.pause(); vp.currentTime = 0; }
+  const lp = document.getElementById('ov-loop-player');
+  if (lp) { lp.pause(); }
   // Resetea badges en lobby
-  ['qr','logo','black','video'].forEach(k => {
+  ['qr','logo','black'].forEach(k => {
     const badge = document.getElementById('badge-' + k);
     const btn   = document.getElementById('btn-ov-' + k);
     if (badge) badge.textContent = 'apagado';
@@ -2827,7 +2840,7 @@ window.addEventListener('load', () => {
   <!-- Header compacto siempre visible -->
   <div class="prod-header">
     <div>
-      <div class="prod-title">🎛️ JeoparSII!</div>
+      <div class="prod-title" style="display:flex;align-items:center;gap:0.4rem;">🎛️ <img src="logo-jeoparsii.png" alt="JeoparSII!" style="max-height:1.5rem;vertical-align:middle;"></div>
       <div class="prod-subtitle" id="prod-state-name">Sala de Control</div>
     </div>
     <div style="text-align:right;">
@@ -2855,18 +2868,13 @@ window.addEventListener('load', () => {
         </button>
         <button class="prod-lobby-btn" id="btn-ov-logo" onclick="prodToggleLogo()">
           <span class="btn-icon">🎬</span>
-          <span class="btn-label">Logo / Bienvenida</span>
+          <span class="btn-label">Cortinilla / Bienvenida</span>
           <span class="btn-badge" id="badge-logo">apagado</span>
         </button>
         <button class="prod-lobby-btn" id="btn-ov-black" onclick="prodToggleBlackout()">
           <span class="btn-icon">⬛</span>
           <span class="btn-label">Pantalla en negro</span>
           <span class="btn-badge" id="badge-black">apagado</span>
-        </button>
-        <button class="prod-lobby-btn" id="btn-ov-video" onclick="prodToggleCortinilla()">
-          <span class="btn-icon">🎬</span>
-          <span class="btn-label">Cortinilla de entrada</span>
-          <span class="btn-badge" id="badge-video">apagado</span>
         </button>
       </div>
     </div>
@@ -2923,11 +2931,11 @@ window.addEventListener('load', () => {
   <div class="ov-qr-box" id="ov-qr-canvas"></div>
   <div class="ov-qr-url">polar-multimedia.github.io/jeoparsii/jugador</div>
 </div>
-<!-- Logo / Bienvenida -->
+<!-- Logo / Bienvenida — video en loop -->
 <div id="ov-logo" class="pantalla-overlay">
-  <div class="ov-logo-title">JeoparSII!</div>
-  <div class="ov-logo-rule"></div>
-  <div class="ov-logo-sub">SII — Roma V · Summit Gastro Cancún 2026</div>
+  <video id="ov-loop-player" playsinline preload="auto" muted loop style="width:100%;height:100%;object-fit:cover;display:block;">
+    <source src="https://polar-multimedia.github.io/jeoparsii/loop.mp4" type="video/mp4">
+  </video>
 </div>
 <!-- Pantalla negra -->
 <div id="ov-blackout" class="pantalla-overlay"></div>
@@ -2944,7 +2952,7 @@ window.addEventListener('load', () => {
 
 <div id="live-scores-view">
   <div class="lsv-header">
-    <div class="lsv-title">🏆 JeoparSII!</div>
+    <div class="lsv-title" style="display:flex;align-items:center;gap:0.4rem;">🏆 <img src="logo-jeoparsii.png" alt="JeoparSII!" style="max-height:1.6rem;vertical-align:middle;"></div>
     <div style="text-align:right;">
       <div class="lsv-live-badge">
         <div class="lsv-dot"></div> EN VIVO
