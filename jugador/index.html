@@ -1624,7 +1624,8 @@ function startBoardStats() {
 
 function renderBoard() {
   const mod = MODULES[state.moduleIdx];
-  document.getElementById('board-module-label').textContent = mod.name;
+  const _lbl = document.getElementById('board-module-label');
+  if (_lbl) _lbl.textContent = mod.name;
   startBoardStats();
   const grid = document.getElementById('board-grid');
   grid.innerHTML = '';
