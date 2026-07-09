@@ -296,7 +296,7 @@ body {
   animation: xPop 0.35s cubic-bezier(.34,1.5,.64,1) both;
 }
 .cell-used-logo {
-  width: 90%; max-width: none; opacity: 0.7;
+  width: 75%; max-width: none; opacity: 0.7;
   filter: grayscale(10%) drop-shadow(0 2px 6px rgba(0,0,0,0.5));
 }
 .cell-used-x {
@@ -639,6 +639,11 @@ body.ponente-mode .timer-display { font-size: clamp(2.2rem,6.5vw,5rem) !importan
   from { opacity:0; transform:translateY(45px); }
   to   { opacity:1; transform:none; }
 }
+@keyframes optWipeDown {
+  from { opacity:0; transform:scaleY(0); }
+  to   { opacity:1; transform:scaleY(1); }
+}
+body.ponente-mode #q-options .opt-btn { transform-origin: top center; }
 body.ponente-mode .q-box.q-anim-enter {
   animation: qZoomPonente 0.72s cubic-bezier(0.16,1,0.3,1) both !important;
 }
@@ -648,10 +653,10 @@ body.ponente-mode .q-box.q-anim-enter .q-meta {
 body.ponente-mode .q-box.q-anim-enter .q-text {
   animation: qSlideUp 0.55s 0.52s ease both !important;
 }
-body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(1) { animation:qSlideUp 0.4s 0.70s ease both !important; }
-body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(2) { animation:qSlideUp 0.4s 0.86s ease both !important; }
-body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(3) { animation:qSlideUp 0.4s 1.02s ease both !important; }
-body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animation:qSlideUp 0.4s 1.18s ease both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(1) { animation:optWipeDown 0.32s 0.76s ease-out both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(2) { animation:optWipeDown 0.32s 0.94s ease-out both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(3) { animation:optWipeDown 0.32s 1.12s ease-out both !important; }
+body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animation:optWipeDown 0.32s 1.30s ease-out both !important; }
 
 /* ══════════════════════════════════════════════
    PRODUCTOR PANEL
@@ -834,11 +839,10 @@ body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animati
 /* ── PANTALLA: Overlays fijos (controlados por Productor vía Firebase) ── */
 .pantalla-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 900; display: flex; align-items: center; justify-content: center; flex-direction: column; opacity: 0; pointer-events: none; transition: opacity 0.85s ease; }
 .pantalla-overlay.ov-active { opacity: 1; pointer-events: all; }
-#ov-qr { background: rgba(10,22,40,0.97); gap: 1.5rem; }
-.ov-qr-eyebrow { font-size: clamp(0.75rem,2vw,1rem); color: var(--gold); letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
-.ov-qr-title { font-size: clamp(2rem,5vw,3.5rem); font-weight: 900; color: var(--white); text-align: center; }
-.ov-qr-box { background: white; padding: 1.5rem; border-radius: 1.2rem; }
-.ov-qr-url { font-size: clamp(0.9rem,2vw,1.3rem); color: var(--dim); letter-spacing: 0.06em; text-align: center; }
+#ov-qr { background: rgba(6,14,28,0.82); gap: 1.8rem; }
+.ov-qr-logo { width: clamp(160px,22vw,300px); filter: drop-shadow(0 4px 32px rgba(212,160,23,0.35)); }
+.ov-qr-box { background: white; padding: clamp(1.2rem,2.5vw,2rem); border-radius: 1.5rem; box-shadow: 0 8px 60px rgba(0,0,0,0.55); }
+.ov-qr-scan { font-size: clamp(1.8rem,4.5vw,3.2rem); font-weight: 900; color: var(--white); text-align: center; text-shadow: 0 2px 24px rgba(0,0,0,0.6); letter-spacing: 0.02em; }
 #ov-logo { background: var(--navy); gap: 0.5rem; }
 .ov-logo-title { font-size: clamp(6rem,20vw,14rem); font-weight: 900; line-height: 0.85; text-align: center; background: linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.06em; }
 .ov-logo-rule { width: 80px; height: 2px; background: linear-gradient(90deg,transparent,var(--gold),transparent); margin: 0.75rem auto; }
@@ -1086,58 +1090,15 @@ body.ponente-text-only .q-actions { display: none !important; }
 <!-- ═══════════════════════════════════
      OVERLAYS
 ═══════════════════════════════════ -->
-<div id="overlay-name" class="overlay" style="overflow-y:auto;">
-  <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!" style="max-width:240px;width:70%;display:block;margin:0 auto 0.15rem;">
-  <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos" style="max-width:160px;width:50%;display:block;margin:0.4rem auto 0.1rem;opacity:0.9;">
-  <div style="font-size:0.75rem;color:rgba(245,200,66,0.6);letter-spacing:0.12em;font-style:italic;margin-bottom:0.9rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
-  <div style="width:40px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto 1rem;"></div>
-
-  <!-- PREMIO HERO -->
-  <div style="background:linear-gradient(135deg,rgba(212,160,23,0.18) 0%,rgba(212,160,23,0.06) 100%);border:1.5px solid var(--gold);border-radius:14px;padding:1.1rem 1.2rem 1rem;margin-bottom:1.1rem;text-align:center;max-width:340px;width:100%;position:relative;overflow:hidden;">
-    <div style="position:absolute;top:-18px;right:-14px;font-size:4rem;opacity:0.07;pointer-events:none;">✈️</div>
-    <div style="font-size:1.35rem;margin-bottom:0.3rem;">✈️</div>
-    <div style="font-size:clamp(1rem,4vw,1.25rem);font-weight:900;color:var(--gold-light);letter-spacing:0.04em;margin-bottom:0.4rem;line-height:1.2;">¿Listo para Washington?</div>
-    <div style="font-size:0.82rem;color:var(--off-white);line-height:1.55;margin-bottom:0.75rem;">
-      Los <strong style="color:var(--gold-light);">3 mejores de este módulo</strong> se ganan una beca completa para la<br>
-      <strong style="color:#fff;">Digestive Disease Week® 2027</strong><br>
-      <span style="color:var(--dim);font-size:0.76rem;">Washington, DC · 15–18 de mayo</span>
-    </div>
-    <div style="display:flex;justify-content:center;gap:1rem;font-size:0.74rem;color:var(--dim);border-top:1px solid rgba(212,160,23,0.2);padding-top:0.6rem;flex-wrap:wrap;">
-      <span>🎟 Inscripción</span>
-      <span>✈️ Vuelo</span>
-      <span>🏨 Hospedaje</span>
-    </div>
-    <div style="margin-top:0.65rem;font-size:0.75rem;color:rgba(245,200,66,0.7);font-style:italic;font-weight:600;">Responde rápido — cada segundo que pierdes son puntos que pierdes.</div>
-  </div>
-
-  <!-- Instrucciones -->
-  <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(212,160,23,0.15);border-radius:10px;padding:0.9rem 1.1rem;margin-bottom:1.1rem;text-align:left;max-width:340px;width:100%;">
-    <div style="font-size:0.75rem;color:var(--gold);font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.65rem;">📋 Cómo jugar</div>
-    <div style="display:flex;flex-direction:column;gap:0.5rem;">
-      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
-        <span style="color:var(--gold);flex-shrink:0;">🎯</span>
-        <span>El tablero tiene <strong>5 categorías</strong> con preguntas de <strong>100 a 500 puntos</strong>.</span>
-      </div>
-      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
-        <span style="color:var(--gold);flex-shrink:0;">⏱</span>
-        <span>Tendrás <strong>15 segundos</strong> para responder una vez que el cronómetro inicie.</span>
-      </div>
-      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
-        <span style="color:var(--gold);flex-shrink:0;">🔒</span>
-        <span>Una vez que selecciones una opción, <strong>no podrás cambiarla</strong>.</span>
-      </div>
-      <div style="display:flex;gap:0.55rem;align-items:flex-start;font-size:0.78rem;color:var(--off-white);line-height:1.4;">
-        <span style="color:var(--gold);flex-shrink:0;">⚡</span>
-        <span>Responder más rápido <strong>suma más puntos</strong>. ¡La velocidad importa!</span>
-      </div>
-    </div>
-  </div>
-
-  <div style="font-size:0.78rem;color:var(--dim);margin-bottom:0.4rem;font-weight:600;">Tu nombre completo (nombre y apellido):</div>
-  <input type="text" id="name-input" placeholder="Ej: María González" maxlength="40"
+<div id="overlay-name" class="overlay" style="overflow-y:auto; gap:0;">
+  <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos"
+    style="width:clamp(120px,45vw,200px);display:block;margin:0 auto 1.8rem;filter:drop-shadow(0 4px 24px rgba(212,160,23,0.25));">
+  <div style="font-size:clamp(0.95rem,3.5vw,1.15rem);font-weight:700;color:var(--white);letter-spacing:0.04em;margin-bottom:1.1rem;">Ingrese su nombre completo</div>
+  <input type="text" id="name-input" placeholder="Nombre y apellido" maxlength="40"
+    style="margin-bottom:0.5rem;"
     onkeydown="if(event.key==='Enter')confirmName()"
     oninput="document.getElementById('name-input').style.borderColor='';const e=document.getElementById('name-error');if(e)e.remove();">
-  <button class="btn btn-primary" style="max-width:260px;" onclick="confirmName()">¡Entrar al juego! →</button>
+  <button class="btn btn-primary" style="max-width:280px;margin-top:0.6rem;" onclick="confirmName()">Ingresar al juego →</button>
 </div>
 <script>
 // ════════════════════════════════════════════
@@ -2104,8 +2065,9 @@ function startPlayerListening() {
   fbListenGame(handleGameEvent);
 }
 function handleGameEvent(data) {
-  if (data.type === 'question' || data.type === 'question_options') {
-    if (data.moduleIdx !== state.moduleIdx) return;
+  // question_text, question_options y question muestran la pregunta al jugador
+  if (data.type === 'question' || data.type === 'question_options' || data.type === 'question_text') {
+    if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
     state.playerAnswered = false;
     state.playerQuestionStart = 0;           // Se setea al iniciar cronómetro, no antes
     state.playerLockedPts = 0;
@@ -2120,6 +2082,15 @@ function handleGameEvent(data) {
     if (b) { b.style.width = '100%'; b.style.background = 'var(--gold)'; }
   } else if (data.type === 'timer_start') {
     // MC pressed "Iniciar Cronómetro" — reveal options y empezar a medir velocidad
+    // Si el jugador no recibió question_options antes (Firebase sobrescribió), renderizar ahora
+    if (!document.getElementById('player-opts-wrap') && data.catIdx !== undefined) {
+      if (data.moduleIdx === undefined || data.moduleIdx === state.moduleIdx) {
+        state.playerAnswered = false;
+        state.playerCurrentCatIdx = data.catIdx;
+        state.playerCurrentQIdx = data.qIdx;
+        renderPlayerQuestion(data.catIdx, data.qIdx);
+      }
+    }
     const now = Date.now();
     playerTimerStart = now;
     state.playerQuestionStart = now;         // La velocidad se mide desde aquí
@@ -2327,6 +2298,17 @@ function dismissWaitingScreen() {
   }
 }
 
+// Revela las opciones de la pregunta ya visible en pantalla con animación suave,
+// SIN re-disparar el zoom del q-box. Solo para uso del ponente.
+function ponteRevealOptions() {
+  const opts = document.querySelectorAll('#q-options .opt-btn');
+  opts.forEach((opt, i) => {
+    opt.style.animation = 'none';
+    void opt.offsetWidth; // force reflow
+    opt.style.animation = `optWipeDown 0.32s ${0.06 + i * 0.16}s ease-out both`;
+  });
+}
+
 function startPonentListening() {
   // Eventos que indican que el operador está activamente mostrando contenido
   const ACTIVE_EVENTS = new Set([
@@ -2349,7 +2331,13 @@ function startPonentListening() {
     } else if (t === 'question_options' || t === 'question') {
       if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
       document.body.classList.remove('ponente-text-only');
-      openQuestion(data.catIdx, data.qIdx);
+      // Si la misma pregunta ya está visible, solo revelar las opciones sin re-zoom
+      if (state.currentQ && state.currentQ.catIdx === data.catIdx && state.currentQ.qIdx === data.qIdx
+          && document.getElementById('screen-question')?.classList.contains('active')) {
+        ponteRevealOptions();
+      } else {
+        openQuestion(data.catIdx, data.qIdx);
+      }
     // ── Cronómetro ──
     } else if (t === 'timer_start') {
       document.body.classList.remove('ponente-text-only');
@@ -2357,12 +2345,21 @@ function startPonentListening() {
     // ── Revelar ──
     } else if (t === 'reveal') {
       if (!state.revealed) revealAnswer();
-    // ── Volver al tablero ──
+    // ── Volver al tablero / Reset ──
     } else if (t === 'idle') {
       clearTimer();
       document.body.classList.remove('ponente-text-only');
-      renderBoard();
-      showScreen('board');
+      // Re-leer answered desde Firebase para reflejar resets correctamente
+      if (db) {
+        db.ref('answered').once('value', snap => {
+          const val = snap.val() || {};
+          state.usedCells = new Set(Object.keys(val).map(k => k.replace('_','-')));
+          renderBoard(); showScreen('board');
+        });
+      } else {
+        state.usedCells = new Set();
+        renderBoard(); showScreen('board');
+      }
     // ── Overlays ──
     } else if (t === 'overlay_video') {
       pantallaSetOverlay('video');
@@ -2422,7 +2419,7 @@ function pantallaSetOverlay(name) {
     if (canvas && typeof QRCode !== 'undefined') {
       new QRCode(canvas, {
         text: 'https://polar-multimedia.github.io/jeoparsii/jugador/',
-        width: 280, height: 280,
+        width: 320, height: 320,
         colorDark: '#000000', colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
       });
@@ -2602,7 +2599,7 @@ function prodSetOverlay(name) {
     if (canvas && typeof QRCode !== 'undefined') {
       new QRCode(canvas, {
         text: 'https://polar-multimedia.github.io/jeoparsii/jugador/',
-        width: 280, height: 280,
+        width: 320, height: 320,
         colorDark: '#000000', colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.M
       });
@@ -2785,7 +2782,9 @@ function prodStartTimer() {
   if (PROD.gameState === 'q_text') prodShowOptions();
   PROD.gameState = 'timer';
   PROD.timerVal  = 15;
-  fbBroadcast({ type: 'timer_start', timeLimit: 15 });
+  // Incluir catIdx/qIdx/moduleIdx para que jugadores que perdieron question_options
+  // puedan renderizar la pregunta al recibir timer_start
+  fbBroadcast({ type: 'timer_start', timeLimit: 15, moduleIdx: 2, catIdx: PROD.currentCat, qIdx: PROD.currentQ });
   const timerEl = document.getElementById('prod-timer-display');
   if (timerEl) { timerEl.textContent = '15'; timerEl.style.color = 'var(--gold-light)'; timerEl.style.display = 'block'; }
   if (PROD.timerInterval) clearInterval(PROD.timerInterval);
@@ -2859,52 +2858,104 @@ function prodResetBoard() {
   updateProductorUI();
 }
 
+// ── prodUndo: retrocede un paso en el flujo del juego ───────────────
+function prodUndo() {
+  switch (PROD.gameState) {
+    case 'q_text':
+      prodBackToBoard();
+      break;
+    case 'q_opts':
+      if (prodResponseRef) { prodResponseRef.off(); prodResponseRef = null; }
+      PROD.gameState = 'q_text';
+      fbBroadcast({ type: 'question_text', moduleIdx: 2, catIdx: PROD.currentCat, qIdx: PROD.currentQ });
+      updateProductorHeader();
+      updateProductorUI();
+      break;
+    case 'timer':
+    case 'timer_ended':
+      if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
+      { const te = document.getElementById('prod-timer-display'); if (te) te.style.display = 'none'; }
+      PROD.gameState = 'q_opts';
+      fbBroadcast({ type: 'question_options', moduleIdx: 2, catIdx: PROD.currentCat, qIdx: PROD.currentQ, timeLimit: 15 });
+      if (db) {
+        prodResponseRef = db.ref(`responses/${PROD.currentCat}_${PROD.currentQ}`);
+        prodResponseRef.on('value', snap => {
+          const c = snap.val() ? Object.keys(snap.val()).length : 0;
+          const el = document.getElementById('prod-response-count'); if (el) el.textContent = c;
+        });
+      }
+      updateProductorHeader();
+      updateProductorUI();
+      break;
+    case 'revealed':
+      { const key = `${PROD.currentCat}-${PROD.currentQ}`;
+        PROD.usedCells.delete(key);
+        if (db) db.ref(`answered/${key.replace('-','_')}`).remove();
+      }
+      PROD.gameState = 'q_opts';
+      fbBroadcast({ type: 'question_options', moduleIdx: 2, catIdx: PROD.currentCat, qIdx: PROD.currentQ, timeLimit: 15 });
+      if (db) {
+        prodResponseRef = db.ref(`responses/${PROD.currentCat}_${PROD.currentQ}`);
+        prodResponseRef.on('value', snap => {
+          const c = snap.val() ? Object.keys(snap.val()).length : 0;
+          const el = document.getElementById('prod-response-count'); if (el) el.textContent = c;
+        });
+      }
+      renderProductorBoard();
+      updateProductorHeader();
+      updateProductorUI();
+      break;
+  }
+}
+
 // ── updateProductorUI ───────────────────────────────────────────────
 function updateProductorUI() {
-  const dockBtn  = document.getElementById('prod-dock-btn');
-  const backBtn  = document.getElementById('prod-back-btn');
+  const dockBtn   = document.getElementById('prod-dock-btn');
+  const backBtn   = document.getElementById('prod-back-btn');
+  const undoBtn   = document.getElementById('prod-undo-btn');
   const secondary = document.getElementById('prod-dock-secondary');
   if (!dockBtn || !backBtn || !secondary) return;
 
-  // Reset secundario
+  // Reset
   secondary.style.display = 'none';
   secondary.innerHTML = '';
+  undoBtn && (undoBtn.style.display = 'none');
+  backBtn.style.display = 'none';
 
   if (PROD.gameState === 'lobby' || PROD.gameState === 'board') {
     dockBtn.style.display = 'none';
-    backBtn.style.display = 'none';
   } else if (PROD.gameState === 'q_text') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '👁 MOSTRAR OPCIONES';
     dockBtn.className     = 'prod-btn-primary';
     dockBtn.onclick       = prodShowOptions;
-    backBtn.style.display = 'block';
-    backBtn.textContent   = '← Cancelar pregunta';
+    if (undoBtn) { undoBtn.style.display = 'block'; undoBtn.textContent = '↩ UNDO — Cancelar pregunta'; }
   } else if (PROD.gameState === 'q_opts') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '▶ INICIAR CRONÓMETRO';
     dockBtn.className     = 'prod-btn-primary';
     dockBtn.onclick       = prodStartTimer;
+    if (undoBtn) { undoBtn.style.display = 'block'; undoBtn.textContent = '↩ UNDO — Ocultar opciones'; }
     backBtn.style.display = 'block';
-    backBtn.textContent   = '← Cancelar pregunta';
+    backBtn.textContent   = '⬛ Cancelar pregunta';
   } else if (PROD.gameState === 'timer') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '✅ REVELAR RESPUESTA';
     dockBtn.className     = 'prod-btn-primary prod-green';
     dockBtn.onclick       = prodReveal;
-    backBtn.style.display = 'none';
+    if (undoBtn) { undoBtn.style.display = 'block'; undoBtn.textContent = '↩ UNDO — Detener cronómetro'; }
   } else if (PROD.gameState === 'timer_ended') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '✅ REVELAR RESPUESTA';
     dockBtn.className     = 'prod-btn-primary prod-green prod-pulse';
     dockBtn.onclick       = prodReveal;
-    backBtn.style.display = 'none';
+    if (undoBtn) { undoBtn.style.display = 'block'; undoBtn.textContent = '↩ UNDO — Volver a opciones'; }
   } else if (PROD.gameState === 'revealed') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '← VOLVER AL TABLERO';
     dockBtn.className     = 'prod-btn-secondary-dock';
     dockBtn.onclick       = prodBackToBoard;
-    backBtn.style.display = 'none';
+    if (undoBtn) { undoBtn.style.display = 'block'; undoBtn.textContent = '↩ UNDO — Des-revelar respuesta'; }
     // Botones secundarios: stats y ranking
     secondary.style.display = 'flex';
     secondary.innerHTML = `
@@ -3154,7 +3205,10 @@ window.addEventListener('load', () => {
   <!-- Dock fijo -->
   <div class="prod-dock">
     <div class="prod-dock-secondary" id="prod-dock-secondary" style="display:none;"></div>
-    <button id="prod-back-btn" class="prod-btn-back" style="display:none;" onclick="prodBackToBoard()">← Volver al tablero</button>
+    <div id="prod-undo-row" style="display:flex; gap:0.4rem; margin-bottom:0.35rem;">
+      <button id="prod-undo-btn" class="prod-btn-back" style="display:none; flex:1; border-color:rgba(245,200,66,0.3); color:var(--gold-light);" onclick="prodUndo()">↩ UNDO</button>
+      <button id="prod-back-btn" class="prod-btn-back" style="display:none; flex:1;" onclick="prodBackToBoard()">⬛ Cancelar</button>
+    </div>
     <button id="prod-dock-btn" class="prod-btn-primary" style="display:none;" onclick=""></button>
   </div>
 </div>
@@ -3183,10 +3237,9 @@ window.addEventListener('load', () => {
 </div>
 <!-- QR -->
 <div id="ov-qr" class="pantalla-overlay">
-  <div class="ov-qr-eyebrow">📱 Únete al juego</div>
-  <div class="ov-qr-title">Escanea con tu celular</div>
+  <img class="ov-qr-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!">
   <div class="ov-qr-box" id="ov-qr-canvas"></div>
-  <div class="ov-qr-url">polar-multimedia.github.io/jeoparsii/jugador</div>
+  <div class="ov-qr-scan">Escanea con tu celular</div>
 </div>
 <!-- Logo / Bienvenida — video en loop -->
 <div id="ov-logo" class="pantalla-overlay">
