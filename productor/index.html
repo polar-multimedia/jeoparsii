@@ -672,6 +672,7 @@ body.ponente-mode .board-header .btn-q-secondary { pointer-events: none; opacity
   border-color: rgba(46,204,113,0.5) !important;
   color: #2ECC71; font-weight: 800;
 }
+.prod-q-answer-hint { border-color: var(--correct) !important; color: var(--correct) !important; }
 /* Timer display */
 #prod-timer-display {
   text-align: center; font-size: 3.2rem; font-weight: 900;
@@ -719,6 +720,67 @@ body.ponente-mode .board-header .btn-q-secondary { pointer-events: none; opacity
   font-family: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer;
 }
 .prod-btn-back:active { background: rgba(255,255,255,0.05); }
+
+/* ── PRODUCTOR: Sala de Control / Lobby ── */
+.prod-lobby { flex: 1; padding: 1rem 1rem 0; display: flex; flex-direction: column; gap: 0.65rem; overflow-y: auto; }
+.prod-lobby-section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.85rem 1rem; }
+.prod-lobby-section-title { font-size: 0.56rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 0.55rem; }
+.prod-lobby-count { font-size: 2.2rem; font-weight: 900; color: var(--gold-light); line-height: 1; }
+.prod-lobby-count-sub { font-size: 0.68rem; color: var(--dim); margin-top: 2px; }
+.prod-lobby-btns { display: flex; flex-direction: column; gap: 0.45rem; }
+.prod-lobby-btn { width: 100%; padding: 0.7rem 1rem; background: var(--navy-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-family: inherit; font-size: 0.82rem; font-weight: 700; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 0.6rem; transition: background 0.15s, border-color 0.15s; }
+.prod-lobby-btn:active { background: var(--navy-light); }
+.prod-lobby-btn .btn-icon { font-size: 1.1rem; }
+.prod-lobby-btn .btn-label { flex: 1; }
+.prod-lobby-btn .btn-badge { font-size: 0.64rem; color: var(--dim); font-weight: 400; background: rgba(255,255,255,0.07); border-radius: 20px; padding: 1px 8px; }
+.prod-lobby-btn.ov-active { border-color: var(--gold); background: rgba(212,160,23,0.14); color: var(--gold-light); }
+.prod-start-game-btn { width: 100%; padding: 1.1rem; background: linear-gradient(135deg,#F5C842 0%,#D4A017 100%); border: none; border-radius: 14px; color: var(--navy); font-family: inherit; font-weight: 900; font-size: 1.05rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; box-shadow: 0 6px 24px rgba(212,160,23,0.4); margin-top: 0.25rem; }
+.prod-start-game-btn:active { transform: scale(0.98); }
+
+/* ── PRODUCTOR: Dock secundario (revealed) ── */
+.prod-dock-secondary { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.prod-btn-aux { flex: 1; min-width: 80px; padding: 0.65rem 0.5rem; background: var(--navy-card); border: 1px solid rgba(245,200,66,0.35); border-radius: 10px; color: var(--gold-light); font-family: inherit; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-align: center; }
+.prod-btn-aux:active { background: var(--navy-light); }
+
+/* ── PANTALLA: Overlays fijos (controlados por Productor vía Firebase) ── */
+.pantalla-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 900; align-items: center; justify-content: center; flex-direction: column; }
+.pantalla-overlay.ov-active { display: flex; }
+#ov-qr { background: rgba(10,22,40,0.97); gap: 1.5rem; }
+.ov-qr-eyebrow { font-size: clamp(0.75rem,2vw,1rem); color: var(--gold); letter-spacing: 0.25em; text-transform: uppercase; font-weight: 700; }
+.ov-qr-title { font-size: clamp(2rem,5vw,3.5rem); font-weight: 900; color: var(--white); text-align: center; }
+.ov-qr-box { background: white; padding: 1.5rem; border-radius: 1.2rem; }
+.ov-qr-url { font-size: clamp(0.9rem,2vw,1.3rem); color: var(--dim); letter-spacing: 0.06em; text-align: center; }
+#ov-logo { background: var(--navy); gap: 0.5rem; }
+.ov-logo-title { font-size: clamp(6rem,20vw,14rem); font-weight: 900; line-height: 0.85; text-align: center; background: linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.06em; }
+.ov-logo-rule { width: 80px; height: 2px; background: linear-gradient(90deg,transparent,var(--gold),transparent); margin: 0.75rem auto; }
+.ov-logo-sub { font-size: clamp(0.9rem,2vw,1.3rem); color: rgba(245,200,66,0.65); letter-spacing: 0.18em; text-align: center; font-style: italic; }
+#ov-blackout { background: #000; }
+#ov-stats { background: rgba(10,22,40,0.97); padding: 3rem; width: 100%; }
+.ov-stats-title { font-size: clamp(1.2rem,3vw,2rem); font-weight: 900; color: var(--gold-light); text-align: center; margin-bottom: 2rem; }
+.ov-stats-rows { width: 100%; max-width: 750px; display: flex; flex-direction: column; gap: 0.75rem; margin: 0 auto; }
+.ov-stats-row { display: flex; align-items: center; gap: 1rem; }
+.ov-stats-ltr { font-size: clamp(1rem,2vw,1.3rem); font-weight: 900; width: 36px; text-align: center; }
+.ov-stats-bar-bg { flex: 1; background: rgba(255,255,255,0.08); border-radius: 10px; height: 44px; overflow: hidden; position: relative; }
+.ov-stats-bar-fill { height: 100%; border-radius: 10px; display: flex; align-items: center; padding-left: 1rem; font-weight: 800; font-size: clamp(0.85rem,1.8vw,1.1rem); color: white; transition: width 1s ease; min-width: 0; }
+.ov-stats-bar-fill.ov-correct { background: var(--correct); }
+.ov-stats-bar-fill.ov-wrong { background: rgba(255,255,255,0.15); }
+.ov-stats-pct { font-size: clamp(0.9rem,2vw,1.2rem); color: var(--dim); width: 56px; text-align: right; font-weight: 700; }
+#ov-ranking { background: rgba(10,22,40,0.97); padding: 3rem; overflow-y: auto; width: 100%; }
+.ov-ranking-title { font-size: clamp(1.5rem,3.5vw,2.5rem); font-weight: 900; color: var(--gold-light); text-align: center; margin-bottom: 2rem; }
+.ov-ranking-rows { width: 100%; max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.6rem; }
+.ov-ranking-row { display: flex; align-items: center; gap: 1rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 0.75rem 1.25rem; }
+.ov-ranking-row.rank-1 { background: rgba(212,160,23,0.18); border-color: var(--gold); }
+.ov-ranking-row.rank-2 { background: rgba(192,192,192,0.09); border-color: rgba(192,192,192,0.3); }
+.ov-ranking-row.rank-3 { background: rgba(205,127,50,0.12); border-color: rgba(205,127,50,0.35); }
+.ov-rank-num { font-size: 1.5rem; font-weight: 900; width: 40px; text-align: center; }
+.ov-rank-name { flex: 1; font-size: clamp(1rem,2.5vw,1.4rem); font-weight: 700; }
+.ov-rank-pts { font-size: clamp(1rem,2.5vw,1.5rem); font-weight: 900; color: var(--gold-light); }
+
+/* ── PONENTE: modo solo texto (opciones ocultas) ── */
+body.ponente-text-only .q-opts-wrap { visibility: hidden !important; }
+body.ponente-text-only #btn-start-wrap,
+body.ponente-text-only #btn-reveal,
+body.ponente-text-only .q-actions { display: none !important; }
 </style>
 </head>
 <body>
@@ -1803,7 +1865,7 @@ function startPlayerListening() {
   fbListenGame(handleGameEvent);
 }
 function handleGameEvent(data) {
-  if (data.type === 'question') {
+  if (data.type === 'question' || data.type === 'question_options') {
     if (data.moduleIdx !== state.moduleIdx) return;
     state.playerAnswered = false;
     state.playerQuestionStart = 0;           // Se setea al iniciar cronómetro, no antes
@@ -2021,75 +2083,317 @@ function esc(str) {
 function startPonentListening() {
   fbListenGame(data => {
     if (!data || !data.type) return;
-    if (data.type === 'question') {
+    const t = data.type;
+    // ── Pregunta solo texto ──
+    if (t === 'question_text') {
       if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
+      document.body.classList.add('ponente-text-only');
       openQuestion(data.catIdx, data.qIdx);
-    } else if (data.type === 'timer_start') {
-      startTimerManual();   // isPonente=true bloquea el re-broadcast automáticamente
-    } else if (data.type === 'reveal') {
+    // ── Pregunta con opciones ──
+    } else if (t === 'question_options' || t === 'question') {
+      if (data.moduleIdx !== undefined && data.moduleIdx !== state.moduleIdx) return;
+      document.body.classList.remove('ponente-text-only');
+      openQuestion(data.catIdx, data.qIdx);
+    // ── Cronómetro ──
+    } else if (t === 'timer_start') {
+      document.body.classList.remove('ponente-text-only');
+      startTimerManual();
+    // ── Revelar ──
+    } else if (t === 'reveal') {
       if (!state.revealed) revealAnswer();
-    } else if (data.type === 'idle') {
+    // ── Volver al tablero ──
+    } else if (t === 'idle') {
       clearTimer();
+      document.body.classList.remove('ponente-text-only');
       renderBoard();
       showScreen('board');
+    // ── Overlays ──
+    } else if (t === 'overlay_qr') {
+      pantallaSetOverlay('qr');
+    } else if (t === 'overlay_logo') {
+      pantallaSetOverlay('logo');
+    } else if (t === 'overlay_blackout') {
+      pantallaSetOverlay('blackout');
+    } else if (t === 'overlay_stats') {
+      // Stats se muestran desde datos ya en pantalla (misma DB)
+      pantallaShowStats(data.catIdx, data.qIdx);
+    } else if (t === 'overlay_ranking') {
+      pantallaShowRanking();
+    } else if (t === 'clear_overlay') {
+      pantallaSetOverlay(null);
     }
+  });
+}
+
+function pantallaSetOverlay(name) {
+  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking'].forEach(id => {
+    document.getElementById(id)?.classList.remove('ov-active');
+  });
+  if (!name) return;
+  // Generar QR si es necesario
+  if (name === 'qr' && !document._qrGenerated) {
+    const canvas = document.getElementById('ov-qr-canvas');
+    if (canvas && typeof QRCode !== 'undefined') {
+      new QRCode(canvas, {
+        text: 'https://polar-multimedia.github.io/jeoparsii/jugador/',
+        width: 280, height: 280,
+        colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      document._qrGenerated = true;
+    }
+  }
+  document.getElementById('ov-' + name)?.classList.add('ov-active');
+}
+
+function pantallaShowStats(catIdx, qIdx) {
+  if (!db) return;
+  const cat = MODULES[2].categories[catIdx];
+  const q   = cat.questions[qIdx];
+  const letters = ['A','B','C','D'];
+  db.ref(`responses/${catIdx}_${qIdx}`).once('value', snap => {
+    const val = snap.val() || {};
+    const answers = Object.values(val);
+    const total = answers.length || 1;
+    const counts = [0,0,0,0];
+    answers.forEach(r => { if (r.chosen >= 0 && r.chosen < 4) counts[r.chosen]++; });
+    const rows = q.opts.map((opt, i) => {
+      const pct = Math.round((counts[i] / total) * 100);
+      const isCorrect = i === q.ans;
+      return `<div class="ov-stats-row">
+        <div class="ov-stats-ltr" style="color:${isCorrect ? 'var(--correct)' : 'var(--dim)'}">${letters[i]}</div>
+        <div class="ov-stats-bar-bg">
+          <div class="ov-stats-bar-fill ${isCorrect ? 'ov-correct' : 'ov-wrong'}" style="width:${pct}%">${pct > 15 ? esc(opt.substring(0,30)) : ''}</div>
+        </div>
+        <div class="ov-stats-pct">${pct}%</div>
+      </div>`;
+    }).join('');
+    document.getElementById('ov-stats-title').textContent = `📊 ${cat.name} · ${q.pts} pts`;
+    document.getElementById('ov-stats-rows').innerHTML = rows;
+    pantallaSetOverlay('stats');
+  });
+}
+
+function pantallaShowRanking() {
+  if (!scoresRef && db) scoresRef = db.ref('scores');
+  if (!scoresRef) return;
+  scoresRef.once('value', snap => {
+    const val = snap.val() || {};
+    const sorted = Object.entries(val).map(([name, pts]) => ({ name, pts: Number(pts) }))
+      .sort((a, b) => b.pts - a.pts).slice(0, 10);
+    const medals = ['🥇','🥈','🥉'];
+    const rows = sorted.map((p, i) => `
+      <div class="ov-ranking-row rank-${i < 3 ? i+1 : 0}">
+        <div class="ov-rank-num">${medals[i] || (i+1)}</div>
+        <div class="ov-rank-name">${esc(p.name)}</div>
+        <div class="ov-rank-pts">${p.pts} pts</div>
+      </div>`).join('');
+    document.getElementById('ov-ranking-rows').innerHTML = rows || '<div style="color:var(--dim);text-align:center;">Sin puntuaciones aún</div>';
+    pantallaSetOverlay('ranking');
   });
 }
 // ════════════════════════════════════════════
 // PRODUCTOR PANEL
 // ════════════════════════════════════════════
 const PROD = {
-  gameState: 'board',   // 'board' | 'question' | 'timer' | 'timer_ended' | 'revealed'
+  // Estados: 'lobby' | 'board' | 'q_text' | 'q_opts' | 'timer' | 'timer_ended' | 'revealed'
+  gameState: 'lobby',
   currentCat: -1,
   currentQ: -1,
   usedCells: new Set(),
   timerInterval: null,
   timerVal: 15,
+  qrActive: false,
+  logoActive: false,
+  blackActive: false,
 };
 let prodConnectedRef = null;
 let prodResponseRef  = null;
+let prodQrGenerated  = false;
+let prodActiveOverlay = null; // 'qr' | 'logo' | 'blackout' | 'stats' | 'ranking' | null
 
 const PROD_STATE_NAMES = {
-  board:        'Tablero — elige una pregunta',
-  question:     '📋 Pregunta abierta',
-  timer:        '⏱ Cronómetro corriendo',
-  timer_ended:  '⏱ Tiempo terminado',
-  revealed:     '✅ Respuesta revelada',
+  lobby:       'Sala de Control',
+  board:       'Tablero',
+  q_text:      '📋 Leyendo pregunta…',
+  q_opts:      '📋 Opciones visibles',
+  timer:       '⏱ Cronómetro corriendo',
+  timer_ended: '⏱ Tiempo terminado',
+  revealed:    '✅ Respuesta revelada',
 };
 
+// ── Inicialización ──────────────────────────────────────────────────
 function goProductor() {
   state.role = 'productor';
+  document.body.classList.add('productor-mode');
   showScreen('productor');
-  setTimeout(() => {
-    startProductorStats();
-    if (db) {
-      db.ref('answered').once('value', snap => {
-        const val = snap.val() || {};
-        Object.keys(val).forEach(k => PROD.usedCells.add(k.replace('_', '-')));
-        renderProductorBoard();
-        updateProductorUI();
-      });
-    } else {
-      renderProductorBoard();
-      updateProductorUI();
-    }
-  }, 150);
+  autoConnectFirebase();
+  startProductorStats();
+  if (db) {
+    db.ref('answered').once('value', snap => {
+      const val = snap.val() || {};
+      Object.keys(val).forEach(k => PROD.usedCells.add(k.replace('_', '-')));
+    });
+  }
+  PROD.gameState = 'lobby';
+  prodShowSection('lobby');
+  updateProductorHeader();
 }
 
 function startProductorStats() {
-  if (!playersRef) return;
+  if (!playersRef && !db) return;
+  if (!playersRef && db) playersRef = db.ref('players');
   if (prodConnectedRef) prodConnectedRef.off();
-  prodConnectedRef = playersRef;
+  prodConnectedRef = playersRef || db.ref('players');
   prodConnectedRef.on('value', snap => {
     const val = snap.val() || {};
-    const connected = Object.values(val).filter(p => p.connected === true).length;
-    const el = document.getElementById('prod-connected');
-    if (el) el.textContent = connected;
+    const n = Object.values(val).filter(p => p.connected === true).length;
+    const el1 = document.getElementById('prod-connected');
+    const el2 = document.getElementById('prod-lobby-count');
+    const badge = document.getElementById('prod-connected-badge');
+    if (el1) el1.textContent = n;
+    if (el2) el2.textContent = n;
+    if (badge) badge.textContent = '👥 ' + n;
   });
 }
 
+function prodShowSection(section) {
+  document.getElementById('prod-lobby').style.display        = section === 'lobby'    ? 'flex' : 'none';
+  document.getElementById('prod-board-wrap').style.display   = section === 'board'    ? 'block' : 'none';
+  document.getElementById('prod-question-wrap').style.display= section === 'question' ? 'block' : 'none';
+}
+
+function updateProductorHeader() {
+  const el = document.getElementById('prod-state-name');
+  if (el) el.textContent = PROD_STATE_NAMES[PROD.gameState] || PROD.gameState;
+}
+
+// ── Navegación principal ────────────────────────────────────────────
+function prodGoLobby() {
+  PROD.gameState = 'lobby';
+  prodShowSection('lobby');
+  updateProductorHeader();
+  updateProductorUI();
+}
+
+function prodGoBoard() {
+  PROD.gameState = 'board';
+  renderProductorBoard();
+  prodShowSection('board');
+  updateProductorHeader();
+  updateProductorUI();
+}
+
+// ── Overlays de pantalla ────────────────────────────────────────────
+function prodSetOverlay(name) {
+  // Apaga todos los overlays
+  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('ov-active');
+  });
+  // Resetea badges en lobby
+  ['qr','logo','black'].forEach(k => {
+    const badge = document.getElementById('badge-' + k);
+    const btn   = document.getElementById('btn-ov-' + k);
+    if (badge) badge.textContent = 'apagado';
+    if (btn)   btn.classList.remove('ov-active');
+  });
+  prodActiveOverlay = name;
+  if (!name) {
+    fbBroadcast({ type: 'clear_overlay' });
+    return;
+  }
+  const el = document.getElementById('ov-' + name);
+  if (el) el.classList.add('ov-active');
+  // Generar QR si es necesario
+  if (name === 'qr' && !prodQrGenerated) {
+    const canvas = document.getElementById('ov-qr-canvas');
+    if (canvas && typeof QRCode !== 'undefined') {
+      new QRCode(canvas, {
+        text: 'https://polar-multimedia.github.io/jeoparsii/jugador/',
+        width: 280, height: 280,
+        colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      prodQrGenerated = true;
+    }
+  }
+  fbBroadcast({ type: 'overlay_' + name });
+  // Actualizar badge en lobby
+  const badgeKey = name === 'blackout' ? 'black' : name;
+  const badge = document.getElementById('badge-' + badgeKey);
+  const btn   = document.getElementById('btn-ov-' + badgeKey);
+  if (badge) badge.textContent = 'activo';
+  if (btn)   btn.classList.add('ov-active');
+}
+
+function prodToggleQR()       { prodSetOverlay(prodActiveOverlay === 'qr'       ? null : 'qr'); }
+function prodToggleLogo()     { prodSetOverlay(prodActiveOverlay === 'logo'      ? null : 'logo'); }
+function prodToggleBlackout() { prodSetOverlay(prodActiveOverlay === 'blackout'  ? null : 'blackout'); }
+
+function prodShowStats() {
+  const cat = MODULES[2].categories[PROD.currentCat];
+  const q   = cat.questions[PROD.currentQ];
+  const letters = ['A','B','C','D'];
+  // Leer respuestas de Firebase
+  if (!db) return;
+  db.ref(`responses/${PROD.currentCat}_${PROD.currentQ}`).once('value', snap => {
+    const val = snap.val() || {};
+    const answers = Object.values(val);
+    const total = answers.length || 1;
+    const counts = [0,0,0,0];
+    answers.forEach(r => { if (r.chosen >= 0 && r.chosen < 4) counts[r.chosen]++; });
+    const rows = q.opts.map((opt, i) => {
+      const pct = Math.round((counts[i] / total) * 100);
+      const isCorrect = i === q.ans;
+      return `<div class="ov-stats-row">
+        <div class="ov-stats-ltr" style="color:${isCorrect ? 'var(--correct)' : 'var(--dim)'}">${letters[i]}</div>
+        <div class="ov-stats-bar-bg">
+          <div class="ov-stats-bar-fill ${isCorrect ? 'ov-correct' : 'ov-wrong'}" style="width:${pct}%">${pct > 15 ? esc(opt.substring(0,30)) : ''}</div>
+        </div>
+        <div class="ov-stats-pct">${pct}%</div>
+      </div>`;
+    }).join('');
+    const title = `${cat.name} · ${q.pts} pts`;
+    document.getElementById('ov-stats-title').textContent = '📊 ' + title;
+    document.getElementById('ov-stats-rows').innerHTML = rows;
+    prodSetOverlayDirect('stats');
+    fbBroadcast({ type: 'overlay_stats', catIdx: PROD.currentCat, qIdx: PROD.currentQ });
+  });
+}
+
+function prodShowRanking() {
+  if (!scoresRef && db) scoresRef = db.ref('scores');
+  if (!scoresRef) return;
+  scoresRef.once('value', snap => {
+    const val = snap.val() || {};
+    const sorted = Object.entries(val).map(([name, pts]) => ({ name, pts: Number(pts) }))
+      .sort((a, b) => b.pts - a.pts).slice(0, 10);
+    const medals = ['🥇','🥈','🥉'];
+    const rows = sorted.map((p, i) => `
+      <div class="ov-ranking-row rank-${i < 3 ? i+1 : 0}">
+        <div class="ov-rank-num">${medals[i] || (i+1)}</div>
+        <div class="ov-rank-name">${esc(p.name)}</div>
+        <div class="ov-rank-pts">${p.pts} pts</div>
+      </div>`).join('');
+    document.getElementById('ov-ranking-rows').innerHTML = rows || '<div style="color:var(--dim);text-align:center;">Sin puntuaciones aún</div>';
+    prodSetOverlayDirect('ranking');
+    fbBroadcast({ type: 'overlay_ranking' });
+  });
+}
+
+// Muestra overlay localmente sin cambiar badges del lobby
+function prodSetOverlayDirect(name) {
+  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking'].forEach(id => {
+    document.getElementById(id)?.classList.remove('ov-active');
+  });
+  prodActiveOverlay = name;
+  document.getElementById('ov-' + name)?.classList.add('ov-active');
+}
+
+// ── Tablero ─────────────────────────────────────────────────────────
 function renderProductorBoard() {
-  const mod = MODULES[2]; // Módulo 3 — SII Roma V
+  const mod  = MODULES[2];
   const grid = document.getElementById('prod-board-grid');
   if (!grid) return;
   grid.innerHTML = '';
@@ -2101,12 +2405,12 @@ function renderProductorBoard() {
   });
   for (let qi = 0; qi < 5; qi++) {
     for (let ci = 0; ci < 5; ci++) {
-      const q = mod.categories[ci].questions[qi];
+      const q   = mod.categories[ci].questions[qi];
       const key = `${ci}-${qi}`;
       const cell = document.createElement('button');
       const colClass = ['prod-col-a','prod-col-b','prod-col-c','prod-col-d','prod-col-e'][ci];
       cell.className = 'prod-cell ' + colClass + (PROD.usedCells.has(key) ? ' prod-used' : '');
-      cell.disabled = PROD.usedCells.has(key);
+      cell.disabled  = PROD.usedCells.has(key);
       cell.textContent = q.pts;
       cell.onclick = () => prodOpenQuestion(ci, qi);
       grid.appendChild(cell);
@@ -2114,6 +2418,7 @@ function renderProductorBoard() {
   }
 }
 
+// ── Pregunta: paso 1 — solo texto en pantalla ───────────────────────
 function prodOpenQuestion(catIdx, qIdx) {
   const key = `${catIdx}-${qIdx}`;
   if (PROD.usedCells.has(key)) return;
@@ -2122,22 +2427,14 @@ function prodOpenQuestion(catIdx, qIdx) {
   const q   = cat.questions[qIdx];
   PROD.currentCat = catIdx;
   PROD.currentQ   = qIdx;
-  PROD.gameState  = 'question';
+  PROD.gameState  = 'q_text';
+  // Limpiar overlay activo
+  prodSetOverlay(null);
   // Limpiar respuestas anteriores
   if (db) db.ref(`responses/${catIdx}_${qIdx}`).remove();
-  // Broadcast a jugadores y Ponente
-  fbBroadcast({ type: 'question', moduleIdx: 2, catIdx, qIdx, timeLimit: 15 });
-  // Escuchar respuestas en tiempo real
-  if (prodResponseRef) prodResponseRef.off();
-  if (db) {
-    prodResponseRef = db.ref(`responses/${catIdx}_${qIdx}`);
-    prodResponseRef.on('value', snap => {
-      const count = snap.val() ? Object.keys(snap.val()).length : 0;
-      const el = document.getElementById('prod-answered');
-      if (el) el.textContent = count;
-    });
-  }
-  // Mostrar detalle de la pregunta
+  // Broadcast: pantalla muestra solo texto (jugadores NO ven aún)
+  fbBroadcast({ type: 'question_text', moduleIdx: 2, catIdx, qIdx });
+  // Contenido en panel del Productor
   const letters = ['A','B','C','D'];
   const content = document.getElementById('prod-question-content');
   if (content) {
@@ -2145,22 +2442,46 @@ function prodOpenQuestion(catIdx, qIdx) {
       <div class="prod-q-cat">${esc(cat.name)}</div>
       <div class="prod-q-pts">${q.pts} pts</div>
       <div class="prod-q-text">${esc(q.q)}</div>
+      <div style="font-size:0.6rem;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin:0.5rem 0 0.25rem;">Opciones (solo tú las ves):</div>
       <div class="prod-q-opts">
         ${q.opts.map((opt, i) => `
-          <div class="prod-q-opt" id="prod-opt-${i}">
-            <strong>${letters[i]}.</strong> ${esc(opt)}
+          <div class="prod-q-opt ${i === q.ans ? 'prod-q-answer-hint' : ''}" id="prod-opt-${i}">
+            <strong>${letters[i]}.</strong> ${esc(opt)}${i === q.ans ? ' ✓' : ''}
           </div>`).join('')}
       </div>`;
   }
-  document.getElementById('prod-board-wrap').style.display = 'none';
-  document.getElementById('prod-question-wrap').style.display = 'block';
   const timerEl = document.getElementById('prod-timer-display');
   if (timerEl) timerEl.style.display = 'none';
+  prodShowSection('question');
+  updateProductorHeader();
   updateProductorUI();
 }
 
+// ── Pregunta: paso 2 — mostrar opciones en pantalla y jugadores ─────
+function prodShowOptions() {
+  if (PROD.gameState !== 'q_text') return;
+  PROD.gameState = 'q_opts';
+  // Broadcast: pantalla + jugadores ven pregunta completa
+  fbBroadcast({ type: 'question_options', moduleIdx: 2, catIdx: PROD.currentCat, qIdx: PROD.currentQ, timeLimit: 15 });
+  // Escuchar respuestas en tiempo real
+  if (prodResponseRef) prodResponseRef.off();
+  if (db) {
+    prodResponseRef = db.ref(`responses/${PROD.currentCat}_${PROD.currentQ}`);
+    prodResponseRef.on('value', snap => {
+      const count = snap.val() ? Object.keys(snap.val()).length : 0;
+      const el = document.getElementById('prod-answered');
+      if (el) el.textContent = count;
+    });
+  }
+  updateProductorHeader();
+  updateProductorUI();
+}
+
+// ── Cronómetro ──────────────────────────────────────────────────────
 function prodStartTimer() {
-  if (PROD.gameState !== 'question') return;
+  if (!['q_opts','q_text'].includes(PROD.gameState)) return;
+  // Si las opciones no se habían mostrado, mostrarlas ahora
+  if (PROD.gameState === 'q_text') prodShowOptions();
   PROD.gameState = 'timer';
   PROD.timerVal  = 15;
   fbBroadcast({ type: 'timer_start', timeLimit: 15 });
@@ -2176,20 +2497,22 @@ function prodStartTimer() {
     if (PROD.timerVal <= 0) {
       clearInterval(PROD.timerInterval); PROD.timerInterval = null;
       PROD.gameState = 'timer_ended';
+      updateProductorHeader();
       updateProductorUI();
     }
   }, 1000);
+  updateProductorHeader();
   updateProductorUI();
 }
 
+// ── Revelar ─────────────────────────────────────────────────────────
 function prodReveal() {
-  if (!['timer','timer_ended','question'].includes(PROD.gameState)) return;
+  if (!['timer','timer_ended','q_opts','q_text'].includes(PROD.gameState)) return;
   if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
   PROD.gameState = 'revealed';
   const mod = MODULES[2];
   const q   = mod.categories[PROD.currentCat].questions[PROD.currentQ];
   fbBroadcast({ type: 'reveal', catIdx: PROD.currentCat, qIdx: PROD.currentQ, ans: q.ans });
-  // Ocultar cronómetro, mostrar respuesta correcta
   const timerEl = document.getElementById('prod-timer-display');
   if (timerEl) timerEl.style.display = 'none';
   document.querySelectorAll('.prod-q-opt').forEach((el, i) => {
@@ -2201,73 +2524,92 @@ function prodReveal() {
   PROD.usedCells.add(key);
   if (db) db.ref(`answered/${key.replace('-','_')}`).set(true);
   if (prodResponseRef) prodResponseRef.off();
+  updateProductorHeader();
   updateProductorUI();
 }
 
+// ── Volver al tablero ───────────────────────────────────────────────
 function prodBackToBoard() {
-  if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
-  if (prodResponseRef)    { prodResponseRef.off(); prodResponseRef = null; }
+  if (PROD.timerInterval)  { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
+  if (prodResponseRef)     { prodResponseRef.off(); prodResponseRef = null; }
   PROD.gameState  = 'board';
   PROD.currentCat = -1;
   PROD.currentQ   = -1;
+  prodSetOverlay(null);
   fbBroadcast({ type: 'idle' });
   renderProductorBoard();
-  document.getElementById('prod-board-wrap').style.display = 'block';
-  document.getElementById('prod-question-wrap').style.display = 'none';
-  const timerEl = document.getElementById('prod-timer-display');
-  if (timerEl) timerEl.style.display = 'none';
+  prodShowSection('board');
+  updateProductorHeader();
   updateProductorUI();
 }
 
+// ── Reset ───────────────────────────────────────────────────────────
 function prodResetBoard() {
   if (!confirm('¿Reiniciar tablero y marcador?\nSe borrarán todos los puntos y respuestas.')) return;
   PROD.usedCells  = new Set();
-  PROD.gameState  = 'board';
+  PROD.gameState  = 'lobby';
   PROD.currentCat = -1;
   PROD.currentQ   = -1;
   fbResetScores();
   fbBroadcast({ type: 'idle' });
-  document.getElementById('prod-board-wrap').style.display = 'block';
-  document.getElementById('prod-question-wrap').style.display = 'none';
-  renderProductorBoard();
+  prodSetOverlay(null);
+  prodShowSection('lobby');
+  updateProductorHeader();
   updateProductorUI();
 }
 
+// ── updateProductorUI ───────────────────────────────────────────────
 function updateProductorUI() {
-  // Estado textual
-  const stateEl = document.getElementById('prod-state-name');
-  if (stateEl) stateEl.textContent = PROD_STATE_NAMES[PROD.gameState] || PROD.gameState;
-  // Botones del dock
-  const dockBtn = document.getElementById('prod-dock-btn');
-  const backBtn = document.getElementById('prod-back-btn');
-  if (!dockBtn || !backBtn) return;
-  if (PROD.gameState === 'board') {
+  const dockBtn  = document.getElementById('prod-dock-btn');
+  const backBtn  = document.getElementById('prod-back-btn');
+  const secondary = document.getElementById('prod-dock-secondary');
+  if (!dockBtn || !backBtn || !secondary) return;
+
+  // Reset secundario
+  secondary.style.display = 'none';
+  secondary.innerHTML = '';
+
+  if (PROD.gameState === 'lobby' || PROD.gameState === 'board') {
     dockBtn.style.display = 'none';
     backBtn.style.display = 'none';
-  } else if (PROD.gameState === 'question') {
+  } else if (PROD.gameState === 'q_text') {
+    dockBtn.style.display = 'block';
+    dockBtn.textContent   = '👁 MOSTRAR OPCIONES';
+    dockBtn.className     = 'prod-btn-primary';
+    dockBtn.onclick       = prodShowOptions;
+    backBtn.style.display = 'block';
+    backBtn.textContent   = '← Cancelar pregunta';
+  } else if (PROD.gameState === 'q_opts') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '▶ INICIAR CRONÓMETRO';
     dockBtn.className     = 'prod-btn-primary';
     dockBtn.onclick       = prodStartTimer;
     backBtn.style.display = 'block';
+    backBtn.textContent   = '← Cancelar pregunta';
   } else if (PROD.gameState === 'timer') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '✅ REVELAR RESPUESTA';
     dockBtn.className     = 'prod-btn-primary prod-green';
     dockBtn.onclick       = prodReveal;
-    backBtn.style.display = 'block';
+    backBtn.style.display = 'none';
   } else if (PROD.gameState === 'timer_ended') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '✅ REVELAR RESPUESTA';
     dockBtn.className     = 'prod-btn-primary prod-green prod-pulse';
     dockBtn.onclick       = prodReveal;
-    backBtn.style.display = 'block';
+    backBtn.style.display = 'none';
   } else if (PROD.gameState === 'revealed') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '← VOLVER AL TABLERO';
     dockBtn.className     = 'prod-btn-secondary-dock';
     dockBtn.onclick       = prodBackToBoard;
     backBtn.style.display = 'none';
+    // Botones secundarios: stats y ranking
+    secondary.style.display = 'flex';
+    secondary.innerHTML = `
+      <button class="prod-btn-aux" onclick="prodShowStats()">📊 Estadísticas</button>
+      <button class="prod-btn-aux" onclick="prodShowRanking()">🏆 Ranking</button>
+      <button class="prod-btn-aux" onclick="prodSetOverlay(null)">✕ Cerrar overlay</button>`;
   }
 }
 // ════════════════════════════════════════════
@@ -2438,45 +2780,111 @@ window.addEventListener('load', () => {
      PRODUCTOR PANEL (?role=productor)
 ═══════════════════════════════════ -->
 <div id="screen-productor" class="screen">
-  <!-- Header -->
+  <!-- Header compacto siempre visible -->
   <div class="prod-header">
     <div>
       <div class="prod-title">🎛️ JeoparSII!</div>
-      <div class="prod-subtitle">Panel del Productor</div>
+      <div class="prod-subtitle" id="prod-state-name">Sala de Control</div>
     </div>
     <div style="text-align:right;">
-      <div style="font-size:0.6rem;color:var(--dim);letter-spacing:0.06em;">SII — Roma V</div>
-      <div style="font-size:0.57rem;color:rgba(245,200,66,0.55);margin-top:2px;">Summit Gastro · Cancún</div>
+      <div style="font-size:0.65rem;color:var(--gold-light);font-weight:700;" id="prod-connected-badge">👥 0</div>
+      <div style="font-size:0.57rem;color:rgba(245,200,66,0.55);margin-top:2px;">✅ <span id="prod-answered">0</span> respondidas</div>
     </div>
   </div>
-  <!-- Stats bar -->
-  <div class="prod-stats-bar">
-    <span>🟢 <span id="prod-connected">0</span> conectados</span>
-    <span class="prod-sep">|</span>
-    <span>✅ <span id="prod-answered">0</span> respondidas</span>
-    <button class="prod-reset-btn" onclick="prodResetBoard()">🔄 Reset</button>
+
+  <!-- ── LOBBY / Sala de Control ── -->
+  <div class="prod-lobby" id="prod-lobby">
+    <!-- Conexiones -->
+    <div class="prod-lobby-section">
+      <div class="prod-lobby-section-title">Jugadores conectados</div>
+      <div class="prod-lobby-count" id="prod-lobby-count">0</div>
+      <div class="prod-lobby-count-sub">esperando en sus celulares…</div>
+    </div>
+    <!-- Pantalla grande -->
+    <div class="prod-lobby-section">
+      <div class="prod-lobby-section-title">Pantalla grande</div>
+      <div class="prod-lobby-btns">
+        <button class="prod-lobby-btn" id="btn-ov-qr" onclick="prodToggleQR()">
+          <span class="btn-icon">📱</span>
+          <span class="btn-label">Mostrar QR de acceso</span>
+          <span class="btn-badge" id="badge-qr">apagado</span>
+        </button>
+        <button class="prod-lobby-btn" id="btn-ov-logo" onclick="prodToggleLogo()">
+          <span class="btn-icon">🎬</span>
+          <span class="btn-label">Logo / Bienvenida</span>
+          <span class="btn-badge" id="badge-logo">apagado</span>
+        </button>
+        <button class="prod-lobby-btn" id="btn-ov-black" onclick="prodToggleBlackout()">
+          <span class="btn-icon">⬛</span>
+          <span class="btn-label">Pantalla en negro</span>
+          <span class="btn-badge" id="badge-black">apagado</span>
+        </button>
+      </div>
+    </div>
+    <!-- Iniciar juego -->
+    <button class="prod-start-game-btn" onclick="prodGoBoard()">▶ INICIAR JUEGO</button>
+    <!-- Reset -->
+    <div style="text-align:center;padding-bottom:1.5rem;">
+      <button class="prod-reset-btn" style="margin:0 auto;" onclick="prodResetBoard()">🔄 Reiniciar tablero y puntos</button>
+    </div>
   </div>
-  <!-- Estado actual -->
-  <div class="prod-state-box">
-    <div class="prod-state-tag">Estado actual</div>
-    <div class="prod-state-name" id="prod-state-name">Tablero — elige una pregunta</div>
-  </div>
-  <!-- Mini tablero (visible en estado 'board') -->
-  <div id="prod-board-wrap">
+
+  <!-- ── TABLERO ── -->
+  <div id="prod-board-wrap" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.5rem 1rem 0.25rem;">
+      <button class="prod-lobby-btn" style="width:auto;padding:0.35rem 0.8rem;font-size:0.72rem;" onclick="prodGoLobby()">← Sala de control</button>
+      <div style="display:flex;gap:0.4rem;">
+        <button class="prod-btn-aux" onclick="prodToggleQR()" id="board-btn-qr">📱 QR</button>
+        <button class="prod-btn-aux" onclick="prodToggleBlackout()" id="board-btn-black">⬛</button>
+      </div>
+    </div>
     <div class="prod-board-grid" id="prod-board-grid"></div>
   </div>
-  <!-- Detalle de pregunta (visible cuando hay pregunta activa) -->
-  <div id="prod-question-wrap" style="display:none;">
+
+  <!-- ── PREGUNTA ── -->
+  <div id="prod-question-wrap" style="display:none; flex:1; overflow-y:auto; padding:0.75rem 1rem 0;">
     <div id="prod-question-content"></div>
-    <div id="prod-timer-display" style="display:none;">15</div>
+    <div id="prod-timer-display" style="display:none; text-align:center; font-size:3.5rem; font-weight:900; color:var(--gold-light); padding:0.5rem 0;"></div>
   </div>
+
   <!-- Espaciador para el dock fijo -->
-  <div style="height:140px;flex-shrink:0;"></div>
+  <div style="height:160px;flex-shrink:0;"></div>
+
   <!-- Dock fijo -->
   <div class="prod-dock">
-    <button id="prod-back-btn" class="prod-btn-back" style="display:none;" onclick="prodBackToBoard()">← Forzar vuelta al tablero</button>
+    <div class="prod-dock-secondary" id="prod-dock-secondary" style="display:none;"></div>
+    <button id="prod-back-btn" class="prod-btn-back" style="display:none;" onclick="prodBackToBoard()">← Volver al tablero</button>
     <button id="prod-dock-btn" class="prod-btn-primary" style="display:none;" onclick=""></button>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     OVERLAYS DE PANTALLA (Productor controla, Pantalla muestra)
+═══════════════════════════════════ -->
+<!-- QR -->
+<div id="ov-qr" class="pantalla-overlay">
+  <div class="ov-qr-eyebrow">📱 Únete al juego</div>
+  <div class="ov-qr-title">Escanea con tu celular</div>
+  <div class="ov-qr-box" id="ov-qr-canvas"></div>
+  <div class="ov-qr-url">polar-multimedia.github.io/jeoparsii/jugador</div>
+</div>
+<!-- Logo / Bienvenida -->
+<div id="ov-logo" class="pantalla-overlay">
+  <div class="ov-logo-title">JeoparSII!</div>
+  <div class="ov-logo-rule"></div>
+  <div class="ov-logo-sub">SII — Roma V · Summit Gastro Cancún 2026</div>
+</div>
+<!-- Pantalla negra -->
+<div id="ov-blackout" class="pantalla-overlay"></div>
+<!-- Estadísticas de respuestas -->
+<div id="ov-stats" class="pantalla-overlay">
+  <div class="ov-stats-title" id="ov-stats-title">📊 Resultados</div>
+  <div class="ov-stats-rows" id="ov-stats-rows"></div>
+</div>
+<!-- Ranking en vivo -->
+<div id="ov-ranking" class="pantalla-overlay">
+  <div class="ov-ranking-title">🏆 Ranking en vivo</div>
+  <div class="ov-ranking-rows" id="ov-ranking-rows"></div>
 </div>
 
 <div id="live-scores-view">
