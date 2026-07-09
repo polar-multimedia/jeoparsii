@@ -296,24 +296,32 @@ body {
   animation: xPop 0.35s cubic-bezier(.34,1.5,.64,1) both;
 }
 .cell-used-logo {
-  width: clamp(28px,60%,56px); opacity: 0.55;
-  filter: grayscale(30%);
+  width: 90%; max-width: none; opacity: 0.7;
+  filter: grayscale(10%) drop-shadow(0 2px 6px rgba(0,0,0,0.5));
 }
 .cell-used-x {
   font-size: clamp(0.9rem,2.5vw,1.5rem);
   font-weight: 900; color: rgba(255,80,80,0.7);
   line-height: 1; margin-top: -2px;
 }
-/* Flash al seleccionar celda */
-@keyframes cellSelect {
-  0%   { transform:scale(1);    box-shadow:none; }
-  40%  { transform:scale(1.18); box-shadow:0 0 0 4px var(--gold), 0 0 40px rgba(212,160,23,0.9); background:#F5C842 !important; border-color:var(--gold) !important; }
-  100% { transform:scale(1.28); box-shadow:0 0 0 6px var(--gold), 0 0 80px rgba(212,160,23,0.6); opacity:0; }
+/* Parpadeo multicolor al seleccionar celda (2 segundos) */
+@keyframes cellBlink {
+  0%    { background:#F5C842 !important; box-shadow:0 0 28px #F5C842, 0 0 0 3px #F5C842; transform:scale(1.10); }
+  12%   { background:#FF3A3A !important; box-shadow:0 0 28px #FF3A3A, 0 0 0 3px #FF3A3A; transform:scale(1.05); }
+  24%   { background:#3ADFFF !important; box-shadow:0 0 28px #3ADFFF, 0 0 0 3px #3ADFFF; transform:scale(1.10); }
+  36%   { background:#3AFF6A !important; box-shadow:0 0 28px #3AFF6A, 0 0 0 3px #3AFF6A; transform:scale(1.05); }
+  48%   { background:#FF3AFF !important; box-shadow:0 0 28px #FF3AFF, 0 0 0 3px #FF3AFF; transform:scale(1.10); }
+  60%   { background:#F5C842 !important; box-shadow:0 0 28px #F5C842, 0 0 0 3px #F5C842; transform:scale(1.05); }
+  72%   { background:#FF3A3A !important; box-shadow:0 0 28px #FF3A3A, 0 0 0 3px #FF3A3A; transform:scale(1.10); }
+  84%   { background:#3ADFFF !important; box-shadow:0 0 28px #3ADFFF, 0 0 0 3px #3ADFFF; transform:scale(1.05); }
+  92%   { background:#ffffff !important; box-shadow:0 0 60px #fff,    0 0 0 4px #fff;    transform:scale(1.18); }
+  100%  { background:#ffffff !important; box-shadow:0 0 80px #fff;                        transform:scale(1.22); opacity:0.2; }
 }
 .cell.cell-selecting {
-  animation: cellSelect 0.38s cubic-bezier(.4,0,.2,1) forwards !important;
+  animation: cellBlink 2s ease-in-out forwards !important;
   pointer-events: none !important;
   z-index: 20;
+  border-color: var(--gold) !important;
 }
 /* Stats bar del tablero */
 .board-stats-bar {
@@ -1684,9 +1692,9 @@ function renderBoard() {
       } else {
         cell.innerHTML = `<span class="pts">${q.pts}</span>`;
         cell.onclick = () => {
-          // Flash de color antes de abrir la pregunta
+          // Parpadeo de colores durante 2 segundos antes de abrir la pregunta
           cell.classList.add('cell-selecting');
-          setTimeout(() => openQuestion(ci, qi), 360);
+          setTimeout(() => openQuestion(ci, qi), 2000);
         };
       }
       grid.appendChild(cell);
