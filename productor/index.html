@@ -788,7 +788,7 @@ body.ponente-text-only .q-actions { display: none !important; }
 <!-- ═══════════════════════════════════
      LANDING
 ═══════════════════════════════════ -->
-<div id="screen-landing" class="screen active">
+<div id="screen-landing" class="screen">
   <div class="landing-top">
     <div class="logo-eyebrow">Carnot · Educación Médica Continua</div>
     <div class="logo-title">JeoparSII!</div>
@@ -1050,6 +1050,16 @@ body.ponente-text-only .q-actions { display: none !important; }
 // 'jugador'   → jugador/index.html
 // ════════════════════════════════════════════
 const FORCED_ROLE = 'productor';
+
+// Flash-prevention: muestra la pantalla correcta en DOMContentLoaded,
+// sin esperar a que Firebase y los CDN terminen de cargar (window.load llega tarde).
+if (FORCED_ROLE === 'productor') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const s = document.getElementById('screen-productor');
+    if (s) s.classList.add('active');
+  });
+}
 
 // ════════════════════════════════════════════
 // GAME DATA
@@ -2779,7 +2789,7 @@ window.addEventListener('load', () => {
 <!-- ═══════════════════════════════════
      PRODUCTOR PANEL (?role=productor)
 ═══════════════════════════════════ -->
-<div id="screen-productor" class="screen">
+<div id="screen-productor" class="screen active">
   <!-- Header compacto siempre visible -->
   <div class="prod-header">
     <div>

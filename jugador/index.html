@@ -1051,6 +1051,16 @@ body.ponente-text-only .q-actions { display: none !important; }
 // ════════════════════════════════════════════
 const FORCED_ROLE = 'jugador';
 
+// Flash-prevention: muestra la pantalla correcta en DOMContentLoaded,
+// sin esperar a que Firebase y los CDN terminen de cargar (window.load llega tarde).
+if (FORCED_ROLE === 'productor') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const s = document.getElementById('screen-productor');
+    if (s) s.classList.add('active');
+  });
+}
+
 // ════════════════════════════════════════════
 // GAME DATA
 // ════════════════════════════════════════════
