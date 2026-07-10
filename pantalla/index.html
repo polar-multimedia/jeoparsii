@@ -907,7 +907,7 @@ body.ponente-text-only .q-actions { display: none !important; }
 <div id="screen-landing" class="screen active">
   <div class="landing-top">
     <div class="logo-eyebrow">Carnot · Educación Médica Continua</div>
-    <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!" class="logo-title-img" style="max-width:280px;width:75%;display:block;margin:0 auto 0.2rem;">
+    <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsi-letras.png" alt="JeoparSII!" class="logo-title-img" style="max-width:280px;width:75%;display:block;margin:0 auto 0.2rem;">
     <div class="logo-byline">SII — Roma V · Summit Gastro Cancún 2026</div>
     <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos" style="max-width:180px;width:55%;display:block;margin:0.6rem auto;opacity:0.92;">
     <div class="logo-rule"></div>
@@ -2778,56 +2778,16 @@ function prodToggleCortinilla() {
 }
 
 function prodShowStats() {
-  const cat = MODULES[2].categories[PROD.currentCat];
-  const q   = cat.questions[PROD.currentQ];
-  const letters = ['A','B','C','D'];
-  // Leer respuestas de Firebase
-  if (!db) return;
-  db.ref(`responses/${PROD.currentCat}_${PROD.currentQ}`).once('value', snap => {
-    const val = snap.val() || {};
-    const answers = Object.values(val);
-    const total = answers.length || 1;
-    const counts = [0,0,0,0];
-    answers.forEach(r => { if (r.chosen >= 0 && r.chosen < 4) counts[r.chosen]++; });
-    const rows = q.opts.map((opt, i) => {
-      const pct = Math.round((counts[i] / total) * 100);
-      const isCorrect = i === q.ans;
-      return `<div class="ov-stats-row">
-        <div class="ov-stats-ltr" style="color:${isCorrect ? 'var(--correct)' : 'var(--dim)'}">${letters[i]}</div>
-        <div class="ov-stats-bar-bg">
-          <div class="ov-stats-bar-fill ${isCorrect ? 'ov-correct' : 'ov-wrong'}" style="width:${pct}%">${pct > 15 ? esc(opt.substring(0,30)) : ''}</div>
-        </div>
-        <div class="ov-stats-pct">${pct}%</div>
-      </div>`;
-    }).join('');
-    const title = `${cat.name} · ${q.pts} pts`;
-    document.getElementById('ov-stats-title').textContent = '📊 ' + title;
-    document.getElementById('ov-stats-rows').innerHTML = rows;
-    prodSetOverlayDirect('stats');
-    fbBroadcast({ type: 'overlay_stats', catIdx: PROD.currentCat, qIdx: PROD.currentQ });
-  });
+  // Solo transmite a la pantalla principal — el productor no muestra el overlay localmente
+  if (PROD.currentCat < 0 || PROD.currentQ < 0) return;
+  prodActiveOverlay = 'stats'; // para que "Cerrar overlay" funcione
+  fbBroadcast({ type: 'overlay_stats', catIdx: PROD.currentCat, qIdx: PROD.currentQ });
 }
 
 function prodShowRanking() {
-  if (!scoresRef && db) scoresRef = db.ref('scores');
-  if (!scoresRef) return;
-  scoresRef.once('value', snap => {
-    const val = snap.val() || {};
-    // Cada entrada en Firebase es { name, pts } (objeto), no un número plano
-    const sorted = Object.values(val)
-      .map(entry => ({ name: entry.name || '?', pts: Number(entry.pts) || 0 }))
-      .sort((a, b) => b.pts - a.pts).slice(0, 10);
-    const medals = ['🥇','🥈','🥉'];
-    const rows = sorted.map((p, i) => `
-      <div class="ov-ranking-row rank-${i < 3 ? i+1 : 0}">
-        <div class="ov-rank-num">${medals[i] || (i+1)}</div>
-        <div class="ov-rank-name">${esc(p.name)}</div>
-        <div class="ov-rank-pts">${p.pts} pts</div>
-      </div>`).join('');
-    document.getElementById('ov-ranking-rows').innerHTML = rows || '<div style="color:var(--dim);text-align:center;">Sin puntuaciones aún</div>';
-    prodSetOverlayDirect('ranking');
-    fbBroadcast({ type: 'overlay_ranking' });
-  });
+  // Solo transmite a la pantalla principal — el productor no muestra el overlay localmente
+  prodActiveOverlay = 'ranking'; // para que "Cerrar overlay" funcione
+  fbBroadcast({ type: 'overlay_ranking' });
 }
 
 // Muestra overlay localmente sin cambiar badges del lobby
@@ -3280,7 +3240,7 @@ window.addEventListener('load', () => {
   <!-- Header compacto siempre visible -->
   <div class="prod-header">
     <div>
-      <div class="prod-title" style="display:flex;align-items:center;gap:0.4rem;">🎛️ <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!" style="max-height:1.5rem;vertical-align:middle;"></div>
+      <div class="prod-title" style="display:flex;align-items:center;gap:0.4rem;">🎛️ <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsi-letras.png" alt="JeoparSII!" style="max-height:1.5rem;vertical-align:middle;"></div>
       <div class="prod-subtitle" id="prod-state-name">Sala de Control</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
@@ -3415,7 +3375,7 @@ window.addEventListener('load', () => {
 
 <div id="live-scores-view">
   <div class="lsv-header">
-    <div class="lsv-title" style="display:flex;align-items:center;gap:0.4rem;">🏆 <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="JeoparSII!" style="max-height:1.6rem;vertical-align:middle;"></div>
+    <div class="lsv-title" style="display:flex;align-items:center;gap:0.4rem;">🏆 <img src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsi-letras.png" alt="JeoparSII!" style="max-height:1.6rem;vertical-align:middle;"></div>
     <div style="text-align:right;">
       <div class="lsv-live-badge">
         <div class="lsv-dot"></div> EN VIVO
