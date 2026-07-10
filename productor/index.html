@@ -1248,12 +1248,12 @@ async function prepararPantalla() {
   const status = document.getElementById('preparar-status');
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando…'; }
 
+  // ── 1. Precargar videos ─────────────────────────────────────────────
   const videos = [
     document.getElementById('ov-loop-player'),
     document.getElementById('ov-video-player'),
   ];
-
-  const promises = videos.map(v => {
+  const videoPromises = videos.map(v => {
     if (!v) return Promise.resolve();
     v.preload = 'auto';
     v.load();
@@ -1261,31 +1261,46 @@ async function prepararPantalla() {
       if (v.readyState >= 4) { res(); return; }
       const done = () => { v.removeEventListener('canplaythrough', done); res(); };
       v.addEventListener('canplaythrough', done);
-      // Timeout de seguridad — 8 segundos
-      setTimeout(res, 8000);
+      setTimeout(res, 8000); // timeout de seguridad
     });
   });
+  await Promise.all(videoPromises);
 
-  await Promise.all(promises);
-
-  // Hace un silent play/pause para confirmar que el browser desbloqueó la reproducción
+  // Silent play/pause para desbloquear autoplay del browser
   for (const v of videos) {
     if (!v) continue;
-    const originalMuted = v.muted; // guarda estado original
+    const originalMuted = v.muted;
     try { v.muted = true; await v.play(); v.pause(); v.currentTime = 0; } catch(_) {}
-    v.muted = originalMuted; // RESTAURA — cortinilla debe quedar con audio
+    v.muted = originalMuted;
   }
-  // Asegurar explícitamente que la cortinilla no quede silenciada
   const cortinilla = document.getElementById('ov-video-player');
   if (cortinilla) cortinilla.muted = false;
 
+  // ── 2. Precargar los 25 MP3 como blobs en memoria ──────────────────
+  if (status) status.textContent = '🎵 Descargando audio… 0 / 25';
+  let audioDone = 0;
+  const audioPromises = Array.from({ length: 25 }, (_, i) => {
+    const num = i + 1;
+    const url = MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3';
+    return fetch(url)
+      .then(r => r.blob())
+      .then(blob => {
+        audioBlobs[num] = URL.createObjectURL(blob); // instantáneo al reproducir
+        audioDone++;
+        if (status) status.textContent = `🎵 Descargando audio… ${audioDone} / 25`;
+      })
+      .catch(() => { audioDone++; }); // si falla un archivo, sigue con los demás
+  });
+  await Promise.all(audioPromises);
+
+  // ── Todo listo ──────────────────────────────────────────────────────
   if (btn) {
     btn.textContent = '✓ Todo listo';
     btn.style.borderColor = 'rgba(30,180,80,0.6)';
     btn.style.color = 'rgba(80,220,120,0.9)';
   }
   if (status) {
-    status.textContent = 'Videos precargados — esperando al operador';
+    status.textContent = `Videos y ${Object.keys(audioBlobs).length} pistas de audio listos — esperando al operador`;
     status.style.color = 'rgba(212,160,23,0.65)';
   }
 }
@@ -2416,7 +2431,8 @@ function playTimerMusic(catIdx, qIdx) {
   if (FORCED_ROLE !== 'ponente') return;
   stopTimerMusic(false); // detener cualquier pista anterior sin fade
   const num = catIdx * 5 + qIdx + 1;                    // 1–25 según posición en el tablero
-  const src = MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3';
+  // Usar blob precargado si existe (instantáneo), sino URL remota (fallback)
+  const src = audioBlobs[num] || (MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3');
   timerAudio = new Audio(src);
   timerAudio.volume = timerVolume;
   timerAudio.play().catch(() => {}); // silencia error de autoplay
@@ -2658,6 +2674,7 @@ let timerAudio        = null;
 let timerFadeInterval = null;
 let timerVolume       = 1.0; // volumen global controlado desde el productor
 const MUSIC_BASE = 'https://polar-multimedia.github.io/jeoparsii/musica/';
+const audioBlobs = {}; // num → objectURL precargado (evita delay de red en el evento)
 
 const PROD_STATE_NAMES = {
   lobby:       'Sala de Control',
