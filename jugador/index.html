@@ -282,27 +282,22 @@ body {
   position: relative; z-index: 1;
 }
 .cell.used {
-  opacity: 0.4; pointer-events: none;
-  transform: scale(0.95); transition: all 0.4s ease;
-  background: rgba(10,22,40,0.55) !important;
-  border-color: rgba(255,255,255,0.07) !important;
+  opacity: 1; pointer-events: none;
+  transform: scale(0.97); transition: all 0.4s ease;
+  background: rgba(10,22,40,0.7) !important;
+  border-color: rgba(255,255,255,0.06) !important;
 }
 .cell.used .pts { display: none; }
-/* Logo + tache en celdas contestadas */
+/* Imagen casilla-tachada en celdas contestadas */
 .cell-used-inner {
   position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 0;
+  display: flex; align-items: center; justify-content: center;
   animation: xPop 0.35s cubic-bezier(.34,1.5,.64,1) both;
 }
 .cell-used-logo {
-  width: 75%; max-width: none; opacity: 0.7;
-  filter: grayscale(10%) drop-shadow(0 2px 6px rgba(0,0,0,0.5));
-}
-.cell-used-x {
-  font-size: clamp(0.9rem,2.5vw,1.5rem);
-  font-weight: 900; color: rgba(255,80,80,0.7);
-  line-height: 1; margin-top: -2px;
+  width: 90%; height: 90%; object-fit: contain;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
 }
 /* Parpadeo multicolor al seleccionar celda (2 segundos) */
 @keyframes cellBlink {
@@ -1647,10 +1642,8 @@ function renderBoard() {
       cell.dataset.qi = qi;
       if (isUsed) {
         cell.innerHTML = `
-          <span class="pts">${q.pts}</span>
           <div class="cell-used-inner">
-            <img class="cell-used-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-jeoparsii.png" alt="">
-            <span class="cell-used-x">✕</span>
+            <img class="cell-used-logo" src="https://polar-multimedia.github.io/jeoparsii/casilla-tachada.png" alt="">
           </div>`;
       } else {
         cell.innerHTML = `<span class="pts">${q.pts}</span>`;
@@ -2520,7 +2513,9 @@ function pantallaShowRanking() {
   if (!scoresRef) return;
   scoresRef.once('value', snap => {
     const val = snap.val() || {};
-    const sorted = Object.entries(val).map(([name, pts]) => ({ name, pts: Number(pts) }))
+    // Cada entrada en Firebase es { name, pts } (objeto), no un número plano
+    const sorted = Object.values(val)
+      .map(entry => ({ name: entry.name || '?', pts: Number(entry.pts) || 0 }))
       .sort((a, b) => b.pts - a.pts).slice(0, 10);
     const medals = ['🥇','🥈','🥉'];
     const rows = sorted.map((p, i) => `
@@ -2729,7 +2724,9 @@ function prodShowRanking() {
   if (!scoresRef) return;
   scoresRef.once('value', snap => {
     const val = snap.val() || {};
-    const sorted = Object.entries(val).map(([name, pts]) => ({ name, pts: Number(pts) }))
+    // Cada entrada en Firebase es { name, pts } (objeto), no un número plano
+    const sorted = Object.values(val)
+      .map(entry => ({ name: entry.name || '?', pts: Number(entry.pts) || 0 }))
       .sort((a, b) => b.pts - a.pts).slice(0, 10);
     const medals = ['🥇','🥈','🥉'];
     const rows = sorted.map((p, i) => `
