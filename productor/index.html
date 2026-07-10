@@ -876,7 +876,7 @@ body.ponente-text-only #btn-reveal,
 body.ponente-text-only .q-actions { display: none !important; }
 #ov-video { background: #000; }
 #ov-video-player { width: 100%; height: 100%; object-fit: contain; display: block; }
-<style>.screen:not(#screen-productor){display:none!important}#screen-productor{display:flex!important}.pantalla-overlay{display:none!important}</style></style>
+#screen-lobby,#screen-board,#screen-question,#screen-player{display:none!important}#screen-productor{display:flex!important}.pantalla-overlay{display:none!important}</style>
 </head>
 <body>
 <div id="conn-status" onclick="handleConnClick()">⚪ desconectado</div>
@@ -2317,6 +2317,45 @@ function ponteRevealOptions() {
   });
 }
 
+// ── Reproducir canción del cronómetro (solo ponente) ───────────────────────
+function playTimerMusic(catIdx, qIdx) {
+  if (FORCED_ROLE !== 'ponente') return;
+  stopTimerMusic(false); // detener cualquier pista anterior sin fade
+  const num = catIdx * 5 + qIdx + 1;                    // 1–25 según posición en el tablero
+  const src = MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3';
+  timerAudio = new Audio(src);
+  timerAudio.volume = 1.0;
+  timerAudio.play().catch(() => {}); // silencia error de autoplay
+}
+
+// ── Detener música (fade=true → fade-out 1.5s | false → corte inmediato) ──
+function stopTimerMusic(fade) {
+  if (timerFadeInterval) { clearInterval(timerFadeInterval); timerFadeInterval = null; }
+  if (!timerAudio) return;
+  if (fade === false) {
+    timerAudio.pause();
+    timerAudio.src = '';
+    timerAudio = null;
+    return;
+  }
+  // Fade-out suave: 30 pasos × 50ms = 1.5 segundos
+  const audio  = timerAudio;
+  timerAudio   = null;
+  const steps  = 30;
+  const dec    = 1.0 / steps;
+  timerFadeInterval = setInterval(() => {
+    if (audio.volume > dec) {
+      audio.volume = Math.max(0, audio.volume - dec);
+    } else {
+      audio.volume = 0;
+      audio.pause();
+      audio.src = '';
+      clearInterval(timerFadeInterval);
+      timerFadeInterval = null;
+    }
+  }, 50);
+}
+
 function startPonentListening() {
   // Eventos que indican que el operador está activamente mostrando contenido
   const ACTIVE_EVENTS = new Set([
@@ -2357,12 +2396,15 @@ function startPonentListening() {
     // ── Cronómetro ──
     } else if (t === 'timer_start') {
       document.body.classList.remove('ponente-text-only');
+      playTimerMusic(data.catIdx, data.qIdx); // 🎵 arranca la canción
       startTimerManual();
     // ── Revelar ──
     } else if (t === 'reveal') {
+      stopTimerMusic(true); // 🎵 fade-out al revelar respuesta
       if (!state.revealed) revealAnswer();
     // ── Volver al tablero / Reset ──
     } else if (t === 'idle') {
+      stopTimerMusic(true); // 🎵 fade-out al regresar al tablero
       clearTimer();
       document.body.classList.remove('ponente-text-only');
       // Re-leer answered desde Firebase para reflejar resets correctamente
@@ -2511,6 +2553,11 @@ let prodResponseRef  = null;
 let prodQrGenerated  = false;
 let prodActiveOverlay = null; // 'qr' | 'logo' | 'blackout' | 'stats' | 'ranking' | null
 let cellSelectingTimeout = null; // delay de 2s entre cell_selecting y question_text
+
+// ── SISTEMA DE MÚSICA (solo ponente/pantalla) ────────────────────────────
+let timerAudio        = null;
+let timerFadeInterval = null;
+const MUSIC_BASE = 'https://polar-multimedia.github.io/jeoparsii/musica/';
 
 const PROD_STATE_NAMES = {
   lobby:       'Sala de Control',
