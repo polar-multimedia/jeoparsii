@@ -607,9 +607,9 @@ body.ponente-mode .board-stats-bar { padding: 0.7rem 1.5rem; gap: 2.5rem; }
 #conn-status.connected { color: #2ECC71; cursor: pointer; }
 #conn-status.connected:hover { text-decoration: underline; }
 #conn-status.error { color: #E74C3C; }
-/* Ocultar badge fijo cuando el jugador está en su pantalla — la info está en el header */
-#screen-player.active ~ #conn-status,
-body.player-active #conn-status { display: none; }
+/* Ocultar badge fijo en productor y jugador — tienen sus propios indicadores */
+body.productor-mode #conn-status,
+body.player-active  #conn-status { display: none !important; }
 
 /* ══════════════════════════════════════════════
    PONENTE MODE — tablero reactivo (proyector)
@@ -1638,6 +1638,7 @@ function activatePlayer(name, moduleIdx) {
   document.getElementById('overlay-name').classList.remove('show');
   document.getElementById('player-name-display').textContent = name;
   document.getElementById('player-pts-display').textContent = '0 pts';
+  document.body.classList.add('player-active'); // oculta #conn-status global
   const idleNameEl = document.getElementById('player-idle-name');
   if (idleNameEl) idleNameEl.textContent = name;
   const modText = document.getElementById('player-module-text');
@@ -2672,18 +2673,29 @@ const PROD_STATE_NAMES = {
 function goProductor() {
   state.role = 'productor';
   document.body.classList.add('productor-mode');
+  // #conn-status queda oculto por CSS (body.productor-mode)
   showScreen('productor');
   autoConnectFirebase();
   startProductorStats();
+
+  const finishInit = () => {
+    // Intenta restaurar sesión previa (refresco de página en medio del evento)
+    if (!prodRestoreSession()) {
+      PROD.gameState = 'lobby';
+      prodShowSection('lobby');
+      updateProductorHeader();
+    }
+  };
+
   if (db) {
     db.ref('answered').once('value', snap => {
       const val = snap.val() || {};
       Object.keys(val).forEach(k => PROD.usedCells.add(k.replace('_', '-')));
+      finishInit();
     });
+  } else {
+    finishInit();
   }
-  PROD.gameState = 'lobby';
-  prodShowSection('lobby');
-  updateProductorHeader();
 }
 
 function startProductorStats() {
@@ -2717,6 +2729,7 @@ function updateProductorHeader() {
 // ── Navegación principal ────────────────────────────────────────────
 function prodGoLobby() {
   PROD.gameState = 'lobby';
+  try { localStorage.removeItem(PROD_SESS_KEY); } catch(_) {} // Limpiar sesión al volver al lobby
   prodShowSection('lobby');
   updateProductorHeader();
   updateProductorUI();
@@ -2730,19 +2743,84 @@ function prodGoBoard() {
   updateProductorUI();
 }
 
+// ── Sesión del productor (localStorage) — permite reconectar tras refresco ──
+const PROD_SESS_KEY = 'jeoparsii_prod';
+
+function prodSaveSession() {
+  try {
+    localStorage.setItem(PROD_SESS_KEY, JSON.stringify({
+      gameState:  PROD.gameState,
+      currentCat: PROD.currentCat,
+      currentQ:   PROD.currentQ
+    }));
+  } catch(_) {}
+}
+
+function prodRestoreSession() {
+  try {
+    const raw = localStorage.getItem(PROD_SESS_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (!s || !s.gameState || s.gameState === 'lobby') return false;
+
+    PROD.currentCat = typeof s.currentCat === 'number' ? s.currentCat : -1;
+    PROD.currentQ   = typeof s.currentQ   === 'number' ? s.currentQ   : -1;
+    // Si el timer estaba corriendo al refrescar → lo tratamos como terminado
+    PROD.gameState  = s.gameState === 'timer' ? 'timer_ended' : s.gameState;
+
+    renderProductorBoard();
+
+    const inQuestion = PROD.gameState !== 'board' && PROD.currentCat >= 0 && PROD.currentQ >= 0;
+    if (inQuestion) {
+      // Renderizar panel de pregunta sin re-emitir a Firebase
+      const cat = MODULES[2].categories[PROD.currentCat];
+      const q   = cat.questions[PROD.currentQ];
+      const letters = ['A','B','C','D'];
+      const content = document.getElementById('prod-question-content');
+      if (content) {
+        content.innerHTML = `
+          <div class="prod-q-cat">${esc(cat.name)}</div>
+          <div class="prod-q-pts">${q.pts} pts</div>
+          <div class="prod-q-text">${esc(q.q)}</div>
+          <div style="font-size:0.6rem;color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin:0.5rem 0 0.25rem;">Opciones (solo tú las ves):</div>
+          <div class="prod-q-opts">
+            ${q.opts.map((opt, i) => `
+              <div class="prod-q-opt ${i === q.ans ? 'prod-q-answer-hint' : ''}" id="prod-opt-${i}">
+                <strong>${letters[i]}.</strong> ${esc(opt)}${i === q.ans ? ' ✓' : ''}
+              </div>`).join('')}
+          </div>`;
+      }
+      document.getElementById('prod-timer-display')?.style.setProperty('display','none');
+      // Reconectar listener de respuestas
+      if (prodResponseRef) prodResponseRef.off();
+      if (db) {
+        prodResponseRef = db.ref(`responses/${PROD.currentCat}_${PROD.currentQ}`);
+        prodResponseRef.on('value', snap => {
+          const count = snap.val() ? Object.keys(snap.val()).length : 0;
+          const el = document.getElementById('prod-answered');
+          if (el) el.textContent = count;
+        });
+      }
+      prodShowSection('question');
+    } else {
+      PROD.gameState = 'board';
+      prodShowSection('board');
+    }
+    updateProductorHeader();
+    updateProductorUI();
+    return true;
+  } catch(_) { return false; }
+}
+
 // ── Overlays de pantalla ────────────────────────────────────────────
 function prodSetOverlay(name) {
-  // Apaga todos los overlays
-  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking','ov-video'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('ov-active');
-  });
-  // Parar videos si estaban corriendo
+  // El productor NUNCA muestra overlays localmente — solo los transmite a la pantalla principal.
+  // Pausar videos si estaban activos (para evitar audio perdido)
   const vp = document.getElementById('ov-video-player');
   if (vp) { vp.pause(); vp.currentTime = 0; }
   const lp = document.getElementById('ov-loop-player');
   if (lp) { lp.pause(); }
-  // Resetea badges en lobby
+  // Resetear todos los badges del lobby
   ['qr','logo','black','video'].forEach(k => {
     const badge = document.getElementById('badge-' + k);
     const btn   = document.getElementById('btn-ov-' + k);
@@ -2754,23 +2832,9 @@ function prodSetOverlay(name) {
     fbBroadcast({ type: 'clear_overlay' });
     return;
   }
-  const el = document.getElementById('ov-' + name);
-  if (el) el.classList.add('ov-active');
-  // Generar QR si es necesario
-  if (name === 'qr' && !prodQrGenerated) {
-    const canvas = document.getElementById('ov-qr-canvas');
-    if (canvas && typeof QRCode !== 'undefined') {
-      new QRCode(canvas, {
-        text: 'https://polar-multimedia.github.io/jeoparsii/jugador/',
-        width: 320, height: 320,
-        colorDark: '#000000', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      prodQrGenerated = true;
-    }
-  }
+  // Solo broadcast — la pantalla principal muestra el overlay
   fbBroadcast({ type: 'overlay_' + name });
-  // Actualizar badge en lobby
+  // Marcar badge activo en lobby
   const badgeKey = name === 'blackout' ? 'black' : name;
   const badge = document.getElementById('badge-' + badgeKey);
   const btn   = document.getElementById('btn-ov-' + badgeKey);
@@ -2806,13 +2870,6 @@ function prodShowRanking() {
 }
 
 // Muestra overlay localmente sin cambiar badges del lobby
-function prodSetOverlayDirect(name) {
-  ['ov-qr','ov-logo','ov-blackout','ov-stats','ov-ranking'].forEach(id => {
-    document.getElementById(id)?.classList.remove('ov-active');
-  });
-  prodActiveOverlay = name;
-  document.getElementById('ov-' + name)?.classList.add('ov-active');
-}
 
 // ── Control de volumen de pantalla ───────────────────────────────────────
 function prodSetVolume(val) {
@@ -3083,6 +3140,8 @@ function updateProductorUI() {
       <button class="prod-btn-aux" onclick="prodShowRanking()">🏆 Ranking</button>
       <button class="prod-btn-aux" onclick="prodSetOverlay(null)">✕ Cerrar overlay</button>`;
   }
+  // Guardar estado en localStorage para reconectar tras refresco
+  prodSaveSession();
 }
 // ════════════════════════════════════════════
 // INIT
