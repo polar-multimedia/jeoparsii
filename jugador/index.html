@@ -2449,10 +2449,12 @@ function stopTimerMusic(fade) {
     return;
   }
   // Fade-out suave: 30 pasos × 50ms = 1.5 segundos
-  const audio  = timerAudio;
-  timerAudio   = null;
-  const steps  = 30;
-  const dec    = 1.0 / steps;
+  // IMPORTANTE: NO ponemos timerAudio = null aquí — lo dejamos apuntando al audio
+  // que se está desvaneciendo para que stopTimerMusic(false) pueda pararlo si llega
+  // un nuevo timer_start antes de que el fade termine (evita audio huérfano + doble sonido)
+  const audio = timerAudio;
+  const steps = 30;
+  const dec   = 1.0 / steps;
   timerFadeInterval = setInterval(() => {
     if (audio.volume > dec) {
       audio.volume = Math.max(0, audio.volume - dec);
@@ -2462,6 +2464,9 @@ function stopTimerMusic(fade) {
       audio.src = '';
       clearInterval(timerFadeInterval);
       timerFadeInterval = null;
+      // Limpiar timerAudio solo si sigue siendo el mismo audio que terminó el fade
+      // (podría haberse reemplazado ya por una nueva canción)
+      if (timerAudio === audio) timerAudio = null;
     }
   }, 50);
 }
