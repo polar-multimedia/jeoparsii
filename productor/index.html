@@ -897,7 +897,7 @@ body.ponente-text-only #btn-reveal,
 body.ponente-text-only .q-actions { display: none !important; }
 #ov-video { background: #000; }
 #ov-video-player { width: 100%; height: 100%; object-fit: contain; display: block; }
-#screen-lobby,#screen-board,#screen-question,#screen-player{display:none!important}#screen-productor{display:flex!important}.pantalla-overlay{display:none!important}</style>
+</style>
 </head>
 <body>
 <div id="conn-status" onclick="handleConnClick()">⚪ desconectado</div>
@@ -1071,9 +1071,15 @@ body.ponente-text-only .q-actions { display: none !important; }
       </div>
     </div>
   </div>
-  <!-- Logo pie del jugador -->
-  <div class="player-footer">
+  <!-- Pie del jugador: logo + logout -->
+  <div class="player-footer" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;padding:0.4rem 0 0.6rem;">
     <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
+    <button onclick="playerLogout()"
+      style="background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:6px;
+             color:rgba(255,255,255,0.35);font-family:inherit;font-size:0.62rem;font-weight:600;
+             padding:0.25rem 0.9rem;cursor:pointer;letter-spacing:0.06em;">
+      ⏏ Salir
+    </button>
   </div>
   <!-- Modal QR para compartir acceso -->
   <div id="player-qr-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(4,12,24,0.97);display:none;flex-direction:column;align-items:center;justify-content:center;gap:1.2rem;padding:2rem;">
@@ -2335,6 +2341,13 @@ function showPlayerQR() {
 function closePlayerQR() {
   const modal = document.getElementById('player-qr-modal');
   if (modal) modal.style.display = 'none';
+}
+
+function playerLogout() {
+  localStorage.removeItem('gastro_name');
+  localStorage.removeItem('gastro_module');
+  localStorage.removeItem('gastro_uid');
+  window.location.href = 'https://polar-multimedia.github.io/jeoparsii/';
 }
 
 function showPlayerIdle() {
