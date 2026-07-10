@@ -417,14 +417,31 @@ body.ponente-mode .board-stats-bar { padding: 0.7rem 1.5rem; gap: 2.5rem; }
 .player-module-label { display: none; } /* eliminado del header */
 .player-inner {
   flex: 1; overflow-y: auto;
-  display: flex; align-items: flex-start; justify-content: center;
-  padding: 0.6rem 1rem 0; width: 100%; max-width: 520px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; width: 100%; max-width: 520px; margin: 0 auto;
 }
-/* Logo Dr. Valdovinos al pie del jugador */
 .player-footer {
-  flex-shrink: 0; text-align: center; padding: 0.4rem 0 0.5rem;
+  flex-shrink: 0; text-align: center; padding: 0.35rem 0 0.5rem;
 }
-.player-footer img { max-height: 3.5rem; opacity: 0.85; }
+/* Pantalla de espera centrada */
+.player-idle-center {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 1.2rem 1.4rem; gap: 1.1rem; width: 100%;
+}
+.player-idle-name {
+  font-size: clamp(1.5rem, 6vw, 2.2rem); font-weight: 900;
+  color: var(--white); letter-spacing: 0.02em; line-height: 1.2;
+}
+.player-idle-live {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  background: rgba(26,155,95,0.12); border: 1.5px solid rgba(26,155,95,0.4);
+  border-radius: 24px; padding: 0.45rem 1.2rem;
+  font-size: 0.78rem; font-weight: 800; color: #4dd18a;
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.player-idle-logo {
+  max-height: 5.5rem; width: auto; opacity: 0.9;
+}
 .player-waiting { color: var(--dim); font-size: 1.1rem; line-height: 2; text-align: center; }
 .player-q-box {
   background: var(--navy-card); border: 2px solid var(--gold);
@@ -1058,25 +1075,22 @@ body.ponente-text-only .q-actions { display: none !important; }
   </div>
   <div class="player-inner">
     <div id="player-content" style="width:100%;">
-      <div class="player-waiting">
-        <div style="font-size:0.72rem;color:rgba(245,200,66,0.55);letter-spacing:0.1em;font-style:italic;margin-bottom:1.2rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
-        <span class="dot"></span> Conectado — esperando pregunta…<br>
-        <span style="font-size:0.82rem;">El Productor abrirá la siguiente pregunta</span><br><br>
-        <div style="background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);border-radius:10px;padding:0.75rem 1rem;margin:0.5rem auto 0.75rem;text-align:center;max-width:280px;">
-          <div style="font-size:0.9rem;margin-bottom:0.2rem;">✈️</div>
-          <div style="font-size:0.78rem;color:var(--gold-light);font-weight:700;margin-bottom:0.15rem;">Top 3 de este módulo → DDW 2027</div>
-          <div style="font-size:0.68rem;color:var(--dim);line-height:1.4;">Inscripción · vuelo · hospedaje<br>Washington, DC · 15–18 mayo</div>
+      <div class="player-idle-center">
+        <div class="player-idle-name" id="player-idle-name">—</div>
+        <div class="player-idle-live">
+          <span class="dot" style="flex-shrink:0;margin:0;"></span>
+          EN VIVO — ESPERANDO PREGUNTA
         </div>
-        <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);margin-top:0.5rem;" onclick="showPlayerQR()">📱 Compartir QR de acceso</button>
+        <img class="player-idle-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
+        <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);" onclick="showPlayerQR()">📱 Compartir QR de acceso</button>
       </div>
     </div>
   </div>
-  <!-- Pie del jugador: logo + logout -->
-  <div class="player-footer" style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;padding:0.4rem 0 0.6rem;">
-    <img src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
+  <!-- Pie del jugador: solo logout -->
+  <div class="player-footer">
     <button onclick="playerLogout()"
       style="background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:6px;
-             color:rgba(255,255,255,0.35);font-family:inherit;font-size:0.62rem;font-weight:600;
+             color:rgba(255,255,255,0.3);font-family:inherit;font-size:0.62rem;font-weight:600;
              padding:0.25rem 0.9rem;cursor:pointer;letter-spacing:0.06em;">
       ⏏ Salir
     </button>
@@ -1624,6 +1638,8 @@ function activatePlayer(name, moduleIdx) {
   document.getElementById('overlay-name').classList.remove('show');
   document.getElementById('player-name-display').textContent = name;
   document.getElementById('player-pts-display').textContent = '0 pts';
+  const idleNameEl = document.getElementById('player-idle-name');
+  if (idleNameEl) idleNameEl.textContent = name;
   const modText = document.getElementById('player-module-text');
   if (modText) modText.textContent = MODULES[moduleIdx].name;
 
@@ -2351,17 +2367,16 @@ function playerLogout() {
 }
 
 function showPlayerIdle() {
+  const pName = esc(document.getElementById('player-name-display')?.textContent || '—');
   document.getElementById('player-content').innerHTML = `
-    <div class="player-waiting">
-      <div style="font-size:0.72rem;color:rgba(245,200,66,0.55);letter-spacing:0.1em;font-style:italic;margin-bottom:1.2rem;">SII — Roma V · Summit Gastro Cancún 2026</div>
-      <span class="dot"></span> Conectado — esperando pregunta…<br>
-      <span style="font-size:0.82rem;color:var(--dim);">El Productor abrirá la siguiente pregunta</span><br><br>
-      <div style="background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);border-radius:10px;padding:0.75rem 1rem;margin:0.5rem auto 0.75rem;text-align:center;max-width:280px;">
-        <div style="font-size:0.9rem;margin-bottom:0.2rem;">✈️</div>
-        <div style="font-size:0.78rem;color:var(--gold-light);font-weight:700;margin-bottom:0.15rem;">Top 3 de este módulo → DDW 2027</div>
-        <div style="font-size:0.68rem;color:var(--dim);line-height:1.4;">Inscripción · vuelo · hospedaje<br>Washington, DC · 15–18 mayo</div>
+    <div class="player-idle-center">
+      <div class="player-idle-name">${pName}</div>
+      <div class="player-idle-live">
+        <span class="dot" style="flex-shrink:0;margin:0;"></span>
+        EN VIVO — ESPERANDO PREGUNTA
       </div>
-      <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);margin-top:0.5rem;" onclick="showPlayerQR()">📱 Compartir QR de acceso</button>
+      <img class="player-idle-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
+      <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);" onclick="showPlayerQR()">📱 Compartir QR de acceso</button>
     </div>`;
 }
 // ════════════════════════════════════════════
