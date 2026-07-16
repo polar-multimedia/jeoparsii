@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Videos y audios que no van al repo
+musica/*.mp4
+musica/*.m4a
+musica/*.DS_Store
+musica/logo-jeoparsi-letras.png
+
+# Archivos de versiones viejas
+cortinilla-de-entrada2.mp4
+cortinilla-de-entrada3.mp4
+loop3.mp4
