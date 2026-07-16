@@ -2194,6 +2194,11 @@ function handleGameEvent(data) {
     state.playerLastQPts = _qPts;
     startPtsCountdown(_qPts, data.timeLimit || playerTimerLimit || 15);
     startPlayerClientTimer(data.timeLimit || playerTimerLimit || 15);
+  } else if (data.type === 'timer_force_end') {
+    stopPlayerClientTimer();
+    stopPtsCountdown();
+    // Congela la barra y bloquea botones sin mostrar "tiempo terminado"
+    document.querySelectorAll('.player-opt').forEach(b => { b.disabled = true; });
   } else if (data.type === 'reveal') {
     stopPlayerClientTimer();
     stopPtsCountdown();
@@ -2513,6 +2518,10 @@ function startPonentListening() {
       document.body.classList.remove('ponente-text-only');
       playTimerMusic(data.catIdx, data.qIdx); // 🎵 arranca la canción
       startTimerManual();
+    // ── Parar cronómetro (forzado desde productor) ──
+    } else if (t === 'timer_force_end') {
+      stopTimerMusic(true); // 🎵 fade-out música
+      clearTimer();         // detiene el countdown visual en pantalla
     // ── Revelar ──
     } else if (t === 'reveal') {
       if (!state.revealed) revealAnswer();
@@ -3013,6 +3022,18 @@ function prodStartTimer() {
   updateProductorUI();
 }
 
+// ── Parar cronómetro manualmente (para pruebas) ─────────────────────
+function prodForceEndTimer() {
+  if (PROD.gameState !== 'timer') return;
+  if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
+  const timerEl = document.getElementById('prod-timer-display');
+  if (timerEl) timerEl.style.display = 'none';
+  PROD.gameState = 'timer_ended';
+  fbBroadcast({ type: 'timer_force_end' });
+  updateProductorHeader();
+  updateProductorUI();
+}
+
 // ── Revelar ─────────────────────────────────────────────────────────
 function prodReveal() {
   if (!['timer','timer_ended','q_opts','q_text'].includes(PROD.gameState)) return;
@@ -3143,6 +3164,8 @@ function updateProductorUI() {
     dockBtn.className     = 'prod-btn-primary prod-green';
     dockBtn.onclick       = prodReveal;
     if (undoBtn) { undoBtn.style.display = 'block'; undoBtn.textContent = '↩ UNDO — Detener cronómetro'; }
+    secondary.style.display = 'flex';
+    secondary.innerHTML = `<button class="prod-btn-aux" style="background:rgba(231,76,60,0.12);border-color:rgba(231,76,60,0.45);color:#E74C3C;" onclick="prodForceEndTimer()">⏹ Parar cronómetro</button>`;
   } else if (PROD.gameState === 'timer_ended') {
     dockBtn.style.display = 'block';
     dockBtn.textContent   = '✅ REVELAR RESPUESTA';
