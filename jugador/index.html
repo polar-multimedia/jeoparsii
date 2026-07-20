@@ -1077,9 +1077,12 @@ body.ponente-text-only .q-actions { display: none !important; }
     <div id="player-content" style="width:100%;">
       <div class="player-idle-center">
         <div class="player-idle-name" id="player-idle-name">—</div>
-        <div class="player-idle-live">
-          <span class="dot" style="flex-shrink:0;margin:0;"></span>
-          EN VIVO — ESPERANDO PREGUNTA
+        <div class="player-idle-live" style="flex-direction:column;gap:0.3rem;line-height:1.5;">
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="dot" style="flex-shrink:0;margin:0;"></span>
+            <span style="color:#3AFF6A;font-weight:700;letter-spacing:0.08em;">¡CONECTADO EXITOSAMENTE!</span>
+          </div>
+          <span style="font-size:0.85rem;color:var(--dim);letter-spacing:0.06em;">Listos — en unos instantes llega la primera pregunta</span>
         </div>
         <img class="player-idle-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
         <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);" onclick="showPlayerQR()">📱 Compartir QR de acceso</button>
@@ -2392,9 +2395,12 @@ function showPlayerIdle() {
   document.getElementById('player-content').innerHTML = `
     <div class="player-idle-center">
       <div class="player-idle-name">${pName}</div>
-      <div class="player-idle-live">
-        <span class="dot" style="flex-shrink:0;margin:0;"></span>
-        EN VIVO — ESPERANDO PREGUNTA
+      <div class="player-idle-live" style="flex-direction:column;gap:0.3rem;line-height:1.5;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span class="dot" style="flex-shrink:0;margin:0;"></span>
+          <span style="color:#3AFF6A;font-weight:700;letter-spacing:0.08em;">¡CONECTADO EXITOSAMENTE!</span>
+        </div>
+        <span style="font-size:0.85rem;color:var(--dim);letter-spacing:0.06em;">Listos — en unos instantes llega la primera pregunta</span>
       </div>
       <img class="player-idle-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
       <button class="btn-sm" style="background:var(--navy-card);color:var(--gold-light);border:1px solid var(--gold);" onclick="showPlayerQR()">📱 Compartir QR de acceso</button>
