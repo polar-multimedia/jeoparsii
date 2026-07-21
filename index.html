@@ -2948,6 +2948,9 @@ function prodSetOverlay(name) {
     if (btn)   btn.classList.remove('ov-active');
   });
   prodActiveOverlay = name;
+  // Ocultar controles de instrucciones si no hay overlay activo
+  const _instrCtrl = document.getElementById('instr-ctrl-lobby');
+  if (_instrCtrl && !name) _instrCtrl.style.display = 'none';
   if (!name) {
     fbBroadcast({ type: 'clear_overlay' });
     return;
@@ -2960,6 +2963,9 @@ function prodSetOverlay(name) {
   const btn   = document.getElementById('btn-ov-' + badgeKey);
   if (badge) badge.textContent = 'activo';
   if (btn)   btn.classList.add('ov-active');
+  // Mostrar controles de instrucciones solo cuando QR está activo
+  const instrCtrlLobby = document.getElementById('instr-ctrl-lobby');
+  if (instrCtrlLobby) instrCtrlLobby.style.display = (name === 'qr') ? 'block' : 'none';
 }
 
 function prodToggleQR()       { prodSetOverlay(prodActiveOverlay === 'qr'       ? null : 'qr'); }
@@ -3465,6 +3471,8 @@ function showInstrSlide(n) {
   }
   const ind = document.getElementById('instr-slide-ind');
   if (ind) ind.textContent = (instrCurrentSlide + 1) + ' / ' + INSTR_TOTAL;
+  const indLobby = document.getElementById('instr-slide-ind-lobby');
+  if (indLobby) indLobby.textContent = (instrCurrentSlide + 1) + ' / ' + INSTR_TOTAL;
 }
 
 function changeInstrSlide(dir) {
@@ -3521,6 +3529,14 @@ function changeInstrSlide(dir) {
           <span class="btn-label">Mostrar QR de acceso</span>
           <span class="btn-badge" id="badge-qr">apagado</span>
         </button>
+        <div id="instr-ctrl-lobby" style="display:none;padding:0.45rem 0.75rem 0.5rem;background:rgba(212,160,23,0.08);border-radius:8px;border:1px solid rgba(212,160,23,0.25);margin-top:-0.1rem;">
+          <div style="font-size:0.6rem;color:var(--dim);font-weight:700;letter-spacing:0.09em;text-transform:uppercase;margin-bottom:0.4rem;">Instrucciones en pantalla</div>
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <button onclick="changeInstrSlide(-1)" style="background:rgba(212,160,23,0.9);color:#050e1f;border:none;border-radius:50%;width:2rem;height:2rem;font-size:1.2rem;font-weight:900;cursor:pointer;line-height:1;flex-shrink:0;">&#8249;</button>
+            <span id="instr-slide-ind-lobby" style="font-size:0.8rem;font-weight:700;color:var(--gold-light);flex:1;text-align:center;">1 / 6</span>
+            <button onclick="changeInstrSlide(1)" style="background:rgba(212,160,23,0.9);color:#050e1f;border:none;border-radius:50%;width:2rem;height:2rem;font-size:1.2rem;font-weight:900;cursor:pointer;line-height:1;flex-shrink:0;">&#8250;</button>
+          </div>
+        </div>
         <button class="prod-lobby-btn" id="btn-ov-video" onclick="prodToggleCortinilla()">
           <span class="btn-icon">🎬</span>
           <span class="btn-label">Cortinilla / Bienvenida</span>
