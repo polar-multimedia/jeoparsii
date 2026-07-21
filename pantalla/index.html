@@ -940,6 +940,14 @@ body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animati
 .ov-qr-logo { width: clamp(160px,22vw,300px); filter: drop-shadow(0 4px 32px rgba(212,160,23,0.35)); }
 .ov-qr-box { background: white; padding: clamp(1.2rem,2.5vw,2rem); border-radius: 1.5rem; box-shadow: 0 8px 60px rgba(0,0,0,0.55); }
 .ov-qr-scan { font-size: clamp(1.8rem,4.5vw,3.2rem); font-weight: 900; color: var(--white); text-align: center; text-shadow: 0 2px 24px rgba(0,0,0,0.6); letter-spacing: 0.02em; }
+/* ── QR overlay 2-col big screen ── */
+#ov-qr { flex-direction: row !important; align-items: stretch !important; justify-content: flex-start !important; padding: 2rem 2.5rem !important; gap: 2rem !important; }
+.ov-qr-left-col { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:260px; max-width:320px; flex-shrink:0; gap:1rem; }
+.ov-qr-right-col { flex:1; position:relative; border:2px solid rgba(212,160,23,0.35); border-radius:20px; overflow:hidden; min-height:0; }
+.ov-instr-slides-wrap { position:absolute; inset:0; }
+.ov-instr-slide { position:absolute; inset:0; opacity:0; transition:opacity 0.55s ease; display:flex; align-items:center; justify-content:center; padding:0.5rem; }
+.ov-instr-slide.active { opacity:1; }
+.ov-instr-slide img, .ov-instr-slide video { max-width:100%; max-height:100%; object-fit:contain; border-radius:8px; display:block; }
 #ov-logo { background: var(--navy); gap: 0.5rem; }
 .ov-logo-title { font-size: clamp(6rem,20vw,14rem); font-weight: 900; line-height: 0.85; text-align: center; background: linear-gradient(135deg,#F5C842 0%,#D4A017 50%,#F5C842 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: 0.06em; }
 .ov-logo-rule { width: 80px; height: 2px; background: linear-gradient(90deg,transparent,var(--gold),transparent); margin: 0.75rem auto; }
@@ -3437,13 +3445,23 @@ const INSTR_TOTAL = 6;
 
 function showInstrSlide(n) {
   instrCurrentSlide = ((n % INSTR_TOTAL) + INSTR_TOTAL) % INSTR_TOTAL;
+  // Productor: #screen-qr slides
   document.querySelectorAll('#instr-slides-wrap .instr-slide').forEach((el, i) => {
+    el.classList.toggle('active', i === instrCurrentSlide);
+  });
+  // Pantalla grande: #ov-qr slides
+  document.querySelectorAll('#ov-instr-slides-wrap .ov-instr-slide').forEach((el, i) => {
     el.classList.toggle('active', i === instrCurrentSlide);
   });
   const vid = document.getElementById('instr-video');
   if (vid) {
     if (instrCurrentSlide === 5) { vid.play().catch(() => {}); }
     else { vid.pause(); vid.currentTime = 0; }
+  }
+  const vidOv = document.getElementById('ov-instr-video');
+  if (vidOv) {
+    if (instrCurrentSlide === 5) { vidOv.play().catch(() => {}); }
+    else { vidOv.pause(); vidOv.currentTime = 0; }
   }
   const ind = document.getElementById('instr-slide-ind');
   if (ind) ind.textContent = (instrCurrentSlide + 1) + ' / ' + INSTR_TOTAL;
@@ -3579,9 +3597,21 @@ function changeInstrSlide(dir) {
 </div>
 <!-- QR -->
 <div id="ov-qr" class="pantalla-overlay">
-  <img class="ov-qr-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
-  <div class="ov-qr-box" id="ov-qr-canvas"></div>
-  <div class="ov-qr-scan">Escanea con tu celular</div>
+  <div class="ov-qr-left-col">
+    <img class="ov-qr-logo" src="https://polar-multimedia.github.io/jeoparsii/logo-dr.png" alt="Dr. Valdovinos">
+    <div class="ov-qr-box" id="ov-qr-canvas"></div>
+    <div class="ov-qr-scan">Escanea con tu celular</div>
+  </div>
+  <div class="ov-qr-right-col">
+    <div class="ov-instr-slides-wrap" id="ov-instr-slides-wrap">
+      <div class="ov-instr-slide active" data-slide="0"><img src="https://polar-multimedia.github.io/jeoparsii/imagenes%20codigo/01.jpg" alt="Instrucción 1"></div>
+      <div class="ov-instr-slide" data-slide="1"><img src="https://polar-multimedia.github.io/jeoparsii/imagenes%20codigo/02.jpg" alt="Instrucción 2"></div>
+      <div class="ov-instr-slide" data-slide="2"><img src="https://polar-multimedia.github.io/jeoparsii/imagenes%20codigo/03.jpg" alt="Instrucción 3"></div>
+      <div class="ov-instr-slide" data-slide="3"><img src="https://polar-multimedia.github.io/jeoparsii/imagenes%20codigo/04.jpg" alt="Instrucción 4"></div>
+      <div class="ov-instr-slide" data-slide="4"><img src="https://polar-multimedia.github.io/jeoparsii/imagenes%20codigo/05.jpg" alt="Instrucción 5"></div>
+      <div class="ov-instr-slide" data-slide="5"><video id="ov-instr-video" src="https://polar-multimedia.github.io/jeoparsii/imagenes%20codigo/06.mp4" loop playsinline muted></video></div>
+    </div>
+  </div>
 </div>
 <!-- Logo / Bienvenida — video en loop -->
 <div id="ov-logo" class="pantalla-overlay">
