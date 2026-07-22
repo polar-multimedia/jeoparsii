@@ -1298,13 +1298,6 @@ if (FORCED_ROLE === 'jugador') {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     const s = document.getElementById('screen-player');
     if (s) s.classList.add('active');
-    // PERF: mostrar input de nombre de inmediato — sin esperar a que window.load
-    // descargue logo-dr.png (5.5MB) que bloquea el evento load.
-    try {
-      const _sn = localStorage.getItem('gastro_name');
-      const _sm = localStorage.getItem('gastro_module');
-      if (!_sn || _sm !== '2') goPlayer();
-    } catch(_e) { goPlayer(); }
   });
 }
 
@@ -3564,8 +3557,7 @@ window.addEventListener('load', () => {
     } catch(_) {}
 
     // Primera vez o módulo distinto → pedir nombre
-    // PERF: para jugador, goPlayer() ya fue llamado en DOMContentLoaded (más rápido)
-    if (FORCED_ROLE !== 'jugador') goPlayer();
+    goPlayer();
   }
   // Si no hay _role ni _module → landing (panel del operador/MC)
 });
