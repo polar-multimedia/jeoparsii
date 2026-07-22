@@ -584,20 +584,20 @@ body.ponente-mode .board-stats-bar { padding: 0.7rem 1.5rem; gap: 2.5rem; }
 #screen-qr {
   flex-direction: row !important;
   align-items: stretch !important;
-  justify-content: flex-start !important;
-  padding: 1.2rem 1.5rem !important;
-  gap: 1.5rem !important;
+  justify-content: center !important;
+  padding: 1.2rem 2rem !important;
+  gap: 2rem !important;
   overflow: hidden !important;
   text-align: left !important;
 }
 .qr-left-col {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  min-width: 190px; max-width: 220px; flex-shrink: 0;
+  min-width: 260px; max-width: 300px; flex-shrink: 0;
   text-align: center;
 }
 .qr-right-col {
-  flex: 1; position: relative;
+  flex: 0 1 520px; position: relative;
   background: rgba(0,0,0,0.25);
   border: 1.5px solid rgba(212,160,23,0.3);
   border-radius: 16px; overflow: hidden;
@@ -1338,7 +1338,8 @@ function initOrganicLights() {
 async function prepararPantalla() {
   const btn    = document.getElementById('btn-preparar');
   const status = document.getElementById('preparar-status');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando…'; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Cargando… 0%'; }
+  if (status) { status.style.color = 'rgba(212,160,23,0.75)'; status.textContent = '⏳ Precargando videos…'; }
 
   // ── 1. Precargar videos ─────────────────────────────────────────────
   const videos = [
@@ -1369,21 +1370,30 @@ async function prepararPantalla() {
   if (cortinilla) cortinilla.muted = false;
 
   // ── 2. Precargar los 25 MP3 como blobs en memoria ──────────────────
-  if (status) status.textContent = '🎵 Descargando audio… 0 / 25';
+  if (status) status.textContent = '🎵 Descargando audio… 0%';
   let audioDone = 0;
+  let audioErrors = 0;
   const audioPromises = Array.from({ length: 25 }, (_, i) => {
     const num = i + 1;
     const url = MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3';
     return fetch(url)
-      .then(r => r.blob())
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
       .then(blob => {
-        audioBlobs[num] = URL.createObjectURL(blob); // instantáneo al reproducir
+        audioBlobs[num] = URL.createObjectURL(blob);
         audioDone++;
-        if (status) status.textContent = `🎵 Descargando audio… ${audioDone} / 25`;
+        const pct = Math.round((audioDone / 25) * 100);
+        if (status) status.textContent = `🎵 Audio ${audioDone} / 25 — ${pct}%`;
+        if (btn) btn.textContent = `⏳ Cargando… ${pct}%`;
       })
-      .catch(() => { audioDone++; }); // si falla un archivo, sigue con los demás
+      .catch(err => {
+        audioDone++; audioErrors++;
+        const pct = Math.round((audioDone / 25) * 100);
+        if (status) { status.style.color = 'rgba(255,160,60,0.85)'; status.textContent = `⚠️ Audio ${audioDone}/25 — ${pct}% (fallo pista ${num}: ${err.message})`; }
+        if (btn) btn.textContent = `⏳ Cargando… ${pct}%`;
+      });
   });
   await Promise.all(audioPromises);
+  if (audioErrors > 0 && status) status.style.color = 'rgba(255,100,80,0.9)';
 
   // ── Todo listo ──────────────────────────────────────────────────────
   if (btn) {
