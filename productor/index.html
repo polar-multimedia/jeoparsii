@@ -2285,6 +2285,7 @@ function handleGameEvent(data) {
     state.playerCurrentCatIdx = data.catIdx;
     state.playerCurrentQIdx = data.qIdx;
     stopPtsCountdown();
+    stopPlayerClientTimer(); // FIX: detener timer anterior para que no deshabilite botones de la nueva pregunta
     playerTimerLimit = data.timeLimit || 15;
     // Show question but DON'T start timer yet — waits for timer_start event
     renderPlayerQuestion(data.catIdx, data.qIdx);
@@ -3139,6 +3140,10 @@ function prodOpenQuestion(catIdx, qIdx) {
 // ── Cronómetro ──────────────────────────────────────────────────────
 function prodStartTimer() {
   if (PROD.gameState !== 'q_opts') return;
+  // FIX: cancelar el timeout de question_options ANTES de emitir timer_start.
+  // Sin esto, question_options llega 2s después y sobreescribe timer_start en Firebase,
+  // re-renderizando la pregunta con pointer-events:none en todos los jugadores.
+  if (cellSelectingTimeout) { clearTimeout(cellSelectingTimeout); cellSelectingTimeout = null; }
   PROD.gameState = 'timer';
   PROD.timerVal  = 15;
   // Incluir catIdx/qIdx/moduleIdx para que jugadores que perdieron question_options
@@ -3179,6 +3184,8 @@ function prodForceEndTimer() {
 // ── Revelar ─────────────────────────────────────────────────────────
 function prodReveal() {
   if (!['timer','timer_ended','q_opts','q_text'].includes(PROD.gameState)) return;
+  // FIX: cancelar timeout pendiente de question_options igual que en prodBackToBoard
+  if (cellSelectingTimeout) { clearTimeout(cellSelectingTimeout); cellSelectingTimeout = null; }
   if (PROD.timerInterval) { clearInterval(PROD.timerInterval); PROD.timerInterval = null; }
   PROD.gameState = 'revealed';
   const mod = MODULES[2];
@@ -3420,6 +3427,18 @@ document.addEventListener('visibilitychange', () => {
   if (dot) { dot.style.background = '#2ECC71'; }
   const txt = document.getElementById('player-conn-text');
   if (txt) txt.textContent = 'conectado';
+  // FIX: re-sincronizar estado del juego al volver de background.
+  // iOS Safari suspende timers; al volver los ticks acumulados disparan de golpe
+  // y pueden deshabilitar botones. Detener el timer local huérfano y pedir el
+  // estado actual a Firebase para restaurar la UI correctamente.
+  if (gameRef && state.role === 'player') {
+    stopPlayerClientTimer();
+    stopPtsCountdown();
+    gameRef.once('value', snap => {
+      const data = snap.val();
+      if (data && data.type) handleGameEvent(data);
+    });
+  }
 });
 
 window.addEventListener('load', () => {
