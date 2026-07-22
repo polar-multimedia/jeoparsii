@@ -2135,7 +2135,8 @@ function startTimerManual() {
   // Start local timer on MC
   startTimer(15);
   // Broadcast timer_start so all players begin their countdowns simultaneously
-  fbBroadcast({ type: 'timer_start', timeLimit: 15 });
+  const { catIdx: _tCat, qIdx: _tQ } = state.currentQ || {};
+  fbBroadcast({ type: 'timer_start', timeLimit: 15, moduleIdx: state.moduleIdx, catIdx: _tCat, qIdx: _tQ });
 }
 function startMCPtsCountdown(secs) {
   if (mcPtsCountdownInterval) { clearInterval(mcPtsCountdownInterval); mcPtsCountdownInterval = null; }
