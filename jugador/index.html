@@ -3021,7 +3021,7 @@ function prodSetOverlay(name) {
   const lp = document.getElementById('ov-loop-player');
   if (lp) { lp.pause(); }
   // Resetear todos los badges del lobby
-  ['qr','logo','black','video'].forEach(k => {
+  ['qr','logo','black','video','ranking'].forEach(k => {
     const badge = document.getElementById('badge-' + k);
     const btn   = document.getElementById('btn-ov-' + k);
     if (badge) badge.textContent = 'apagado';
@@ -3071,9 +3071,8 @@ function prodShowStats() {
 }
 
 function prodShowRanking() {
-  // Solo transmite a la pantalla principal — el productor no muestra el overlay localmente
-  prodActiveOverlay = 'ranking'; // para que "Cerrar overlay" funcione
-  fbBroadcast({ type: 'overlay_ranking' });
+  // Usa prodSetOverlay para badge, toggle y broadcast correcto
+  prodSetOverlay(prodActiveOverlay === 'ranking' ? null : 'ranking');
 }
 
 // Muestra overlay localmente sin cambiar badges del lobby
@@ -3682,6 +3681,11 @@ function changeInstrSlide(dir) {
           <span class="btn-icon">🌀</span>
           <span class="btn-label">Logo en pantalla</span>
           <span class="btn-badge" id="badge-logo">apagado</span>
+        </button>
+        <button class="prod-lobby-btn" id="btn-ov-ranking" onclick="prodShowRanking()">
+          <span class="btn-icon">🏆</span>
+          <span class="btn-label">Ranking en pantalla</span>
+          <span class="btn-badge" id="badge-ranking">apagado</span>
         </button>
       </div>
     </div>
