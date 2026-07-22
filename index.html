@@ -941,7 +941,7 @@ body.ponente-mode .q-box.q-anim-enter #q-options .opt-btn:nth-child(4) { animati
 .ov-qr-box { background: white; padding: clamp(1.2rem,2.5vw,2rem); border-radius: 1.5rem; box-shadow: 0 8px 60px rgba(0,0,0,0.55); }
 .ov-qr-scan { font-size: clamp(1.8rem,4.5vw,3.2rem); font-weight: 900; color: var(--white); text-align: center; text-shadow: 0 2px 24px rgba(0,0,0,0.6); letter-spacing: 0.02em; }
 /* ── QR overlay 2-col big screen ── */
-#ov-qr { flex-direction: row !important; align-items: stretch !important; justify-content: flex-start !important; padding: 2rem 2.5rem !important; gap: 2rem !important; }
+#ov-qr { flex-direction: row !important; align-items: stretch !important; justify-content: center !important; padding: 2rem 2.5rem !important; gap: 2rem !important; }
 .ov-qr-left-col { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:260px; max-width:320px; flex-shrink:0; gap:1rem; }
 .ov-qr-right-col { flex:1; position:relative; border:2px solid rgba(212,160,23,0.35); border-radius:20px; overflow:hidden; min-height:0; }
 .ov-instr-slides-wrap { position:absolute; inset:0; }
@@ -1373,26 +1373,36 @@ async function prepararPantalla() {
   if (status) status.textContent = '🎵 Descargando audio… 0%';
   let audioDone = 0;
   let audioErrors = 0;
-  const audioPromises = Array.from({ length: 25 }, (_, i) => {
-    const num = i + 1;
-    const url = MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3';
-    return fetch(url)
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
-      .then(blob => {
-        audioBlobs[num] = URL.createObjectURL(blob);
-        audioDone++;
-        const pct = Math.round((audioDone / 25) * 100);
-        if (status) status.textContent = `🎵 Audio ${audioDone} / 25 — ${pct}%`;
-        if (btn) btn.textContent = `⏳ Cargando… ${pct}%`;
-      })
-      .catch(err => {
-        audioDone++; audioErrors++;
-        const pct = Math.round((audioDone / 25) * 100);
-        if (status) { status.style.color = 'rgba(255,160,60,0.85)'; status.textContent = `⚠️ Audio ${audioDone}/25 — ${pct}% (fallo pista ${num}: ${err.message})`; }
-        if (btn) btn.textContent = `⏳ Cargando… ${pct}%`;
-      });
-  });
-  await Promise.all(audioPromises);
+  const AUDIO_BATCH = 5;        // lotes de 5 para no saturar el CDN
+  const AUDIO_TIMEOUT = 20000;  // 20s máximo por archivo
+  const allAudioNums = Array.from({ length: 25 }, (_, i) => i + 1);
+  for (let b = 0; b < allAudioNums.length; b += AUDIO_BATCH) {
+    const batch = allAudioNums.slice(b, b + AUDIO_BATCH);
+    await Promise.all(batch.map(num => {
+      const url = MUSIC_BASE + 'timer-' + String(num).padStart(2, '0') + '.mp3';
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), AUDIO_TIMEOUT);
+      return fetch(url, { signal: ctrl.signal })
+        .then(r => { clearTimeout(timer); if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+        .then(blob => {
+          audioBlobs[num] = URL.createObjectURL(blob);
+          audioDone++;
+          const pct = Math.round((audioDone / 25) * 100);
+          if (status) status.textContent = `🎵 Audio ${audioDone} / 25 — ${pct}%`;
+          if (btn) btn.textContent = `⏳ Cargando… ${pct}%`;
+        })
+        .catch(err => {
+          clearTimeout(timer);
+          audioBlobs[num] = url; // fallback: URL directa sin blob
+          audioDone++; audioErrors++;
+          const pct = Math.round((audioDone / 25) * 100);
+          const isTO = err.name === 'AbortError';
+          const emsg = isTO ? 'timeout 20s' : err.message;
+          if (status) { status.style.color = 'rgba(255,160,60,0.85)'; status.textContent = `⚠️ Audio ${audioDone}/25 — ${pct}% (pista ${num}: ${emsg})`; }
+          if (btn) btn.textContent = `⏳ Cargando… ${pct}%`;
+        });
+    }));
+  }
   if (audioErrors > 0 && status) status.style.color = 'rgba(255,100,80,0.9)';
 
   // ── Todo listo ──────────────────────────────────────────────────────
