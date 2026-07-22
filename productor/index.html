@@ -1290,6 +1290,16 @@ if (FORCED_ROLE === 'ponente') {
   });
 }
 
+// Flash-prevention para jugador — muestra screen-player de inmediato,
+// sin esperar a window.load (que llega tarde y deja ver la landing).
+if (FORCED_ROLE === 'jugador') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const s = document.getElementById('screen-player');
+    if (s) s.classList.add('active');
+  });
+}
+
 function initOrganicLights() {
   const canvas = document.getElementById('lights-canvas');
   if (!canvas) return;
